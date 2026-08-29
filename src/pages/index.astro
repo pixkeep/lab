@@ -1,0 +1,51 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base
+  title="PixKeep Lab — open in-browser image-codec experiments"
+  description="Public, reproducible benchmarks of what browsers actually do when they encode images: canvas.toBlob support, quality adherence, and WASM encoder control groups. Run them on your own device, with your own photos."
+>
+  <h1>PixKeep Lab</h1>
+  <p class="muted">
+    Browsers all claim to support the same image APIs. These experiments measure what they
+    <em>actually do</em> — on your device, with your photos, nothing uploaded.
+    Every experiment is open source and reproducible.
+  </p>
+
+  <div class="card">
+    <h2>🧪 Encode matrix</h2>
+    <p>
+      What does <code>canvas.toBlob('image/jpeg' | 'image/webp' | 'image/avif', quality)</code>
+      really do in your browser? Six quality levels, three formats, native encoder vs
+      WASM control group (MozJPEG / libwebp / @jsquash-avif), with byte sizes, encode
+      latency and DSSIM quality scores.
+    </p>
+    <p>
+      Known catches so far: Safari ignores the WebP quality parameter entirely;
+      no stable browser honours <code>toBlob('image/avif')</code> on the main thread
+      (they silently hand you a PNG). Run it on yours:
+    </p>
+    <p><a class="btn" href="/encode-matrix/">Run the encode matrix →</a></p>
+  </div>
+
+  <div class="card">
+    <h2>🔭 Coming soon</h2>
+    <p class="muted">
+      Format quality mapping (measured AVIF↔JPG↔WebP perceived-quality equivalents) and
+      the DSSIM methodology behind them. Follow
+      <a href="https://github.com/pixkeep/lab">the repo</a> or bring your own question to
+      <a href="https://github.com/pixkeep/lab/discussions">Discussions</a>.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Why this exists</h2>
+    <p>
+      PixKeep builds <a href="https://pixkeep.app">in-browser image tools</a> — everything
+      client-side, nothing uploaded. That means living with the sharp edges of browser
+      image encoders every day. Lab is where those edges get measured in the open, so
+      anyone building on <code>canvas</code>, WASM codecs or the web platform can check
+      the numbers instead of trusting the docs.
+    </p>
+  </div>
+</Base>

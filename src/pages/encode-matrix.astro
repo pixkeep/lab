@@ -1,0 +1,473 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base
+  title="Encode matrix — what canvas.toBlob really does in your browser · PixKeep Lab"
+  description="Measure your browser's native image encoders: JPEG / WebP / AVIF via canvas.toBlob across six quality levels, against a WASM control group (MozJPEG, libwebp, @jsquash-avif). Byte sizes, encode latency, DSSIM quality. Everything runs locally."
+>
+  <h1>Encode matrix</h1>
+  <p class="muted">
+    <code>canvas.toBlob('image/jpeg' | 'image/webp' | 'image/avif', quality)</code> is the
+    only encoder every web app gets for free — but what it actually produces varies wildly
+    by browser. This experiment measures your browser across
+    <strong>6 quality levels × 3 formats × 2 encoder paths</strong>
+    (native toBlob vs WASM control group) and reports output bytes, encode latency and
+    DSSIM quality. Nothing is uploaded; your photos never leave this page.
+  </p>
+
+  <div class="card" id="env-card">
+    <h2>Your environment</h2>
+    <p class="muted" style="margin-top:0">
+      Encoders are native code inside your browser/engine, so the numbers below are a
+      property of <em>this exact setup</em> — browser, version, OS, CPU/GPU all move them.
+      Read locally; only shared if you choose to share.
+    </p>
+    <dl id="env-list" class="env-grid"><dt>Status</dt><dd>collecting…</dd></dl>
+  </div>
+
+  <div class="card">
+    <h2>1 · Choose images</h2>
+    <div class="pick">
+      <div>
+        <h3>Your photos</h3>
+        <p class="muted">Best signal — real content at real resolutions. PNG/JPEG/WebP/AVIF, whatever your browser can decode.</p>
+        <input type="file" id="files" multiple accept="image/*" />
+      </div>
+      <div>
+        <h3>Reference set <span class="muted">(served from cdn.pixkeep.app)</span></h3>
+        <p class="muted">The same four images our published numbers use — comparable across devices.</p>
+        <div id="samples"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2 · Run</h2>
+    <p class="muted">
+      Full resolution is timed as median of 3 runs. Quality is scored as DSSIM against a
+      center-square crop of the source (capped at
+      1200px — the same framing for every encode, so native and WASM paths compare equal). 12MP photos take several minutes — 20+ in Safari.
+      <strong>Keep this tab in the foreground</strong> (background tabs get throttled and
+      pollute the timings).
+    </p>
+    <p>
+      <button class="btn" id="run" disabled>Run benchmark</button>
+      <label class="muted" style="margin-left:12px">
+        <input type="checkbox" id="full-avif" /> also time full-res WASM AVIF (minutes-scale per photo)
+      </label>
+    </p>
+    <div class="progress"><div id="progress-bar"></div></div>
+    <pre id="status">idle</pre>
+  </div>
+
+  <div id="results"></div>
+
+  <div class="card" id="share-card" hidden>
+    <h2>3 · Share your run (optional)</h2>
+    <p class="muted">
+      Different device? Different browser? Your run helps map the matrix — especially
+      Safari, Firefox on Linux, and mobile. The JSON contains only the numbers and the
+      environment block above; no image data, nothing else.
+    </p>
+    <p class="share-row">
+      <button class="btn" id="download">Download JSON</button>
+      <button class="btn ghost" id="copy">Copy summary</button>
+      <a class="btn ghost" id="email" href="#">Email to dev@pixkeep.app</a>
+      <a class="btn ghost" href="https://github.com/pixkeep/lab/discussions" target="_blank" rel="noopener">Post on GitHub Discussions</a>
+    </p>
+    <p class="muted" id="copy-note"></p>
+  </div>
+
+  <div class="card">
+    <h2>Methodology &amp; caveats</h2>
+    <ul class="muted">
+      <li><strong>Quality scales are not comparable across encoders.</strong> "q80" in Chromium's JPEG encoder, MozJPEG and libwebp are three different points on three curves. Compare formats at matched DSSIM, not matched q.</li>
+      <li><strong>Support is detected by the returned blob's type</strong> — browsers that can't encode a format silently return PNG instead of throwing.</li>
+      <li><strong>WASM control group:</strong> MozJPEG (<code>@wasm-codecs/mozjpeg</code>), libwebp (<code>@jsquash/webp</code>), AVIF (<code>@jsquash/avif</code>) — encoded on the <em>same</em> analysis frame as native (identical DSSIM framing), plus one full-res timing run at q60 (AVIF opt-in).</li>
+      <li>Full resolution is timed as median of 3 runs. Quality is scored as DSSIM against a center-square crop of the source (capped at 1200px — same framing for every encode).</li>
+      <li>Timings: median of 3 full-resolution encodes, warm JIT. DevTools closed.</li>
+    </ul>
+    <p class="muted">Found something odd? <a href="https://github.com/pixkeep/lab/discussions">Bring it to Discussions</a> — reproducible oddities become blog posts.</p>
+  </div>
+
+  <style is:global>
+    /* is:global — these rules target JS-created nodes, which never receive
+       Astro's scoped-style attributes (scoped selectors silently miss them). */
+    .env-grid { display: grid; grid-template-columns: 160px 1fr; gap: 4px 16px; margin: 0; font-size: 0.92rem; }
+    .env-grid dt { color: var(--ink-soft); }
+    .env-grid dd { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.86rem; }
+    .pick { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 760px) { .pick { grid-template-columns: 1fr; } }
+    .pick h3 { margin: 0 0 6px; font-size: 1rem; }
+    #samples label { display: flex; gap: 8px; align-items: baseline; padding: 3px 0; font-size: 0.92rem; }
+    .progress { height: 8px; background: #e5eaf1; border-radius: 999px; overflow: hidden; margin: 12px 0 8px; }
+    #progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-deep), var(--accent)); transition: width 0.3s; }
+    #status { white-space: pre-wrap; font-size: 0.85rem; background: var(--navy-0); color: #dbe7f5; border-radius: 8px; padding: 10px 14px; margin: 0; }
+    .share-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .photo h3 { margin-bottom: 4px; }
+    .fmt-head { display: flex; align-items: center; gap: 10px; margin: 14px 0 6px; }
+    .fmt-head h4 { margin: 0; font-size: 0.98rem; }
+  </style>
+
+  <script>
+    import { computeDSSIM, loadImageFromBlob } from '../lib/dssim';
+    import { encodeCanvasAsAvif, encodeCanvasAsJpeg, encodeCanvasAsWebp } from '../lib/encoders';
+    import { collectDeviceInfo, enrichDeviceInfo } from '../lib/device-info';
+
+    // ─── Config ────────────────────────────────────────────────────────────
+    const QUALITY_LEVELS = [10, 40, 60, 80, 92, 100];
+    const FORMATS = [
+      { key: 'jpeg', mime: 'image/jpeg', wasm: 'MozJPEG' },
+      { key: 'webp', mime: 'image/webp', wasm: 'libwebp' },
+      { key: 'avif', mime: 'image/avif', wasm: '@jsquash/avif' },
+    ] as const;
+    const REPS = 3;
+    const ANALYSIS_SIZE = 1200;
+    const CDN = 'https://cdn.pixkeep.app/bench-encode';
+    const SAMPLES = [
+      { key: 'flower1', label: 'flower1 — 12MP flower photo', bytes: 22906732 },
+      { key: 'grass1', label: 'grass1 — 12MP grass photo', bytes: 24649588 },
+      { key: 'graphic-text', label: 'graphic-text — synthetic UI/text', bytes: 113703 },
+      { key: 'alpha-transparent', label: 'alpha-transparent — RGBA test', bytes: 73705 },
+    ];
+
+    type Support = 'ok' | 'silent' | 'unsupported';
+    interface Entry {
+      group: 'native' | 'wasm'; format: string; q: number; support: Support;
+      sizeFull?: number; msFull?: number; size1200?: number; dssim?: number;
+      actualType?: string;
+    }
+    interface PhotoResult { file: string; source: string; width?: number; height?: number; entries: Entry[]; error?: string }
+
+    // ─── DOM ───────────────────────────────────────────────────────────────
+    const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
+    const statusEl = $('#status') as HTMLPreElement;
+    const barEl = $('#progress-bar');
+    const runBtn = $('#run') as HTMLButtonElement;
+    const fileInput = $('#files') as HTMLInputElement;
+    const resultsEl = $('#results');
+    const status = (t: string) => { statusEl.textContent = t; };
+    const progress = (frac: number) => { barEl.style.width = `${Math.round(frac * 100)}%`; };
+
+    // ─── Environment card ──────────────────────────────────────────────────
+    const deviceInfo = collectDeviceInfo();
+    function renderEnv() {
+      const rows: Array<[string, string]> = [
+        ['Browser', `${deviceInfo.browser} ${deviceInfo.browserVersion} (${deviceInfo.engine})`],
+        ['OS', deviceInfo.os + (deviceInfo.arch ? ` (${deviceInfo.arch})` : '')],
+        ['CPU cores', deviceInfo.cores ? String(deviceInfo.cores) : 'not exposed'],
+        ['Memory', deviceInfo.memoryGB != null ? `≈${deviceInfo.memoryGB} GB (browser-reported, may be rounded)` : 'not exposed by this browser'],
+        ['GPU', deviceInfo.gpu ?? 'masked / not exposed'],
+        ['Screen', deviceInfo.screen],
+        ['Mobile', deviceInfo.mobile ? 'yes' : 'no'],
+      ];
+      $('#env-list').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+    }
+    renderEnv();
+    enrichDeviceInfo(deviceInfo).then(renderEnv);
+
+    // ─── Sample picker ─────────────────────────────────────────────────────
+    const samplesEl = $('#samples');
+    for (const s of SAMPLES) {
+      const label = document.createElement('label');
+      label.innerHTML = `<input type="checkbox" value="${s.key}" /> <span>${s.label} <span class="muted">(${(s.bytes / 1048576).toFixed(1)} MB)</span></span>`;
+      samplesEl.appendChild(label);
+    }
+    const selectedSamples = () =>
+      [...samplesEl.querySelectorAll('input:checked')].map((i) => (i as HTMLInputElement).value);
+    function refreshRunBtn() {
+      runBtn.disabled = !(fileInput.files!.length > 0 || selectedSamples().length > 0);
+    }
+    fileInput.addEventListener('change', refreshRunBtn);
+    samplesEl.addEventListener('change', refreshRunBtn);
+
+    // ─── Decode helpers (hardened — see repo history for the failure modes) ─
+    async function fileToMemoryBlob(file: File): Promise<Blob> {
+      let lastErr: unknown;
+      for (let i = 0; i < 10; i++) {
+        try {
+          return new Blob([await file.arrayBuffer()], { type: file.type });
+        } catch (e) {
+          lastErr = e;
+          await new Promise((r) => setTimeout(r, 400));
+        }
+      }
+      throw lastErr;
+    }
+    async function blobToCanvas(blob: Blob): Promise<HTMLCanvasElement> {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+      let bitmapErr: unknown = null;
+      try {
+        const bmp = await createImageBitmap(blob);
+        canvas.width = bmp.width; canvas.height = bmp.height;
+        ctx.drawImage(bmp, 0, 0);
+        bmp.close();
+        return canvas;
+      } catch (e) { bitmapErr = e; }
+      try {
+        const img = await loadImageFromBlob(blob);
+        canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+        ctx.drawImage(img, 0, 0);
+        return canvas;
+      } catch (e) {
+        throw new Error(`decode: bitmap[${(bitmapErr as Error)?.message || bitmapErr}] img[${(e as Error)?.message || e}]`);
+      }
+    }
+    function toBlobP(canvas: HTMLCanvasElement, mime: string, quality?: number): Promise<Blob | null> {
+      return new Promise((resolve) => canvas.toBlob(resolve, mime, quality));
+    }
+    function median(xs: number[]): number {
+      const s = [...xs].sort((a, b) => a - b);
+      return s[Math.floor(s.length / 2)];
+    }
+
+
+    // Center-square cover-crop of the source, capped at ANALYSIS_SIZE — the
+    // shared framing for every DSSIM comparison. Scale-invariant by
+    // construction: the WASM control group encodes at ≤2000px, and cropping
+    // center-squares of different resolutions still frames the same content.
+    async function prepAnalysis(canvas: HTMLCanvasElement): Promise<{ canvas: HTMLCanvasElement; ref: Blob }> {
+      const side = Math.min(ANALYSIS_SIZE, canvas.width, canvas.height);
+      const out = document.createElement('canvas');
+      out.width = side;
+      out.height = side;
+      const ctx = out.getContext('2d')!;
+      const w = canvas.width, h = canvas.height;
+      const cropSide = Math.min(w, h);
+      const sx = Math.floor((w - cropSide) / 2);
+      const sy = Math.floor((h - cropSide) / 2);
+      ctx.drawImage(canvas, sx, sy, cropSide, cropSide, 0, 0, side, side);
+      const ref = await toBlobP(out, 'image/png');
+      return { canvas: out, ref: ref! };
+    }
+    async function tryDssim(ref: Blob, blob: Blob): Promise<number | undefined> {
+      try { return await computeDSSIM(ref, blob); } catch { return undefined; }
+    }
+    function wasmEncode(key: string, canvas: HTMLCanvasElement, q: number): Promise<Blob> {
+      if (key === 'webp') return encodeCanvasAsWebp(canvas, q, true);
+      if (key === 'jpeg') return encodeCanvasAsJpeg(canvas, q, true);
+      return encodeCanvasAsAvif(canvas, q);
+    }
+
+    // ─── Core run ──────────────────────────────────────────────────────────
+    async function runPhoto(name: string, source: string, canvas: HTMLCanvasElement, fullAvif: boolean, onStep: (s: string) => void): Promise<PhotoResult> {
+      const entries: Entry[] = [];
+      const { canvas: aCanvas, ref } = await prepAnalysis(canvas);
+
+      for (const { key, mime } of FORMATS) {
+        const probe = await toBlobP(canvas, mime, 0.8);
+        const support: Support = !probe ? 'unsupported' : probe.type !== mime ? 'silent' : 'ok';
+        for (const q of QUALITY_LEVELS) {
+          const entry: Entry = { group: 'native', format: key, q, support };
+          if (support !== 'ok') {
+            if (q === 80 && probe) { entry.sizeFull = probe.size; entry.actualType = probe.type; }
+          } else {
+            onStep(`native ${key} q${q}`);
+            const times: number[] = [];
+            let size = 0;
+            for (let r = 0; r < REPS; r++) {
+              const t0 = performance.now();
+              const blob = await toBlobP(canvas, mime, q / 100);
+              times.push(performance.now() - t0);
+              size = blob!.size;
+            }
+            entry.sizeFull = size;
+            entry.msFull = Math.round(median(times));
+            const aBlob = await toBlobP(aCanvas, mime, q / 100);
+            entry.size1200 = aBlob!.size;
+            entry.dssim = await tryDssim(ref, aBlob!);
+          }
+          entries.push(entry);
+        }
+      }
+
+      for (const { key } of FORMATS) {
+        for (const q of QUALITY_LEVELS) {
+          onStep(`wasm ${key} q${q}`);
+          const entry: Entry = { group: 'wasm', format: key, q, support: 'ok' };
+          try {
+            const aBlob = await wasmEncode(key, aCanvas, q / 100);
+            entry.size1200 = aBlob.size;
+            entry.dssim = await tryDssim(ref, aBlob);
+          } catch (e) {
+            entry.support = 'unsupported';
+            entry.actualType = (e as Error)?.message || String(e);
+          }
+          entries.push(entry);
+        }
+        // Full-res WASM timing: single q60 run per format (AVIF only on
+        // request — it is minutes-scale on 12MP).
+        if (key !== 'avif' || fullAvif) {
+          onStep(`wasm ${key} full-res timing`);
+          try {
+            const t0 = performance.now();
+            const blob = await wasmEncode(key, canvas, 0.6);
+            const ms = Math.round(performance.now() - t0);
+            const e60 = entries.find((en) => en.group === 'wasm' && en.format === key && en.q === 60);
+            if (e60) { e60.sizeFull = blob.size; e60.msFull = ms; }
+          } catch { /* timing is best-effort */ }
+        }
+      }
+      return { file: name, source, width: canvas.width, height: canvas.height, entries };
+    }
+
+    // ─── Rendering ─────────────────────────────────────────────────────────
+    const kb = (n?: number) => (n == null ? '—' : n >= 1048576 ? `${(n / 1048576).toFixed(2)} MB` : `${Math.round(n / 1024)} KB`);
+    const ds = (n?: number) => (n == null ? '—' : n.toFixed(4));
+    function badge(s: Support, actual?: string) {
+      if (s === 'ok') return '<span class="badge ok">native ok</span>';
+      if (s === 'silent') return `<span class="badge warn">silent → ${actual || 'PNG'}</span>`;
+      return '<span class="badge bad">unsupported</span>';
+    }
+    function renderPhoto(r: PhotoResult) {
+      const card = document.createElement('div');
+      card.className = 'card photo';
+      if (r.error) {
+        card.innerHTML = `<h3>${r.file}</h3><p class="badge bad">failed</p><p class="muted">${r.error}</p>`;
+        resultsEl.appendChild(card);
+        return;
+      }
+      let html = `<h3>${r.file}</h3><p class="muted">${r.width}×${r.height} · source: ${r.source}</p>`;
+      for (const { key, wasm } of FORMATS) {
+        const nat = r.entries.filter((e) => e.group === 'native' && e.format === key);
+        const support = nat.find((e) => e.q === 80)?.support ?? 'ok';
+        const actual = nat.find((e) => e.q === 80)?.actualType;
+        html += `<div class="fmt-head"><h4>${key.toUpperCase()}</h4>${badge(support, actual)}<span class="muted">WASM control: ${wasm}</span></div>`;
+        if (support !== 'ok') {
+          const p80 = nat.find((e) => e.q === 80);
+          html += `<p class="muted">native toBlob returned ${p80?.actualType ?? 'nothing'}${p80?.sizeFull ? ` (${kb(p80.sizeFull)})` : ''} for every quality level — see WASM column for what real ${key.toUpperCase()} encoding costs.</p>`;
+        }
+        html += `<table class="data"><thead><tr><th>q</th><th>native full-res</th><th>native time</th><th>native dssim</th><th>wasm size¹</th><th>wasm dssim</th></tr></thead><tbody>`;
+        for (const q of QUALITY_LEVELS) {
+          const n = nat.find((e) => e.q === q)!;
+          const w = r.entries.find((e) => e.group === 'wasm' && e.format === key && e.q === q);
+          html += `<tr><td>${q}</td><td>${support === 'ok' ? kb(n.sizeFull) : '—'}</td><td>${n.msFull != null ? `${n.msFull} ms` : '—'}</td><td>${support === 'ok' ? ds(n.dssim) : '—'}</td><td>${w ? kb(w.size1200) : '—'}</td><td>${w ? ds(w.dssim) : '—'}</td></tr>`;
+        }
+        html += '</tbody></table>';
+      }
+      card.innerHTML = html;
+      resultsEl.appendChild(card);
+    }
+
+    // ─── Share ─────────────────────────────────────────────────────────────
+    function setupShare(result: object) {
+      ($('#share-card') as HTMLElement).hidden = false;
+      const dl = $('#download') as HTMLButtonElement;
+      dl.disabled = false;
+      dl.onclick = () => {
+        const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `encode-matrix-${deviceInfo.browser.toLowerCase()}-${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+      const summary = (result as { results: PhotoResult[] }).results.map((r) => {
+        const line = (fmt: string) => {
+          const e = r.entries.find((x) => x.group === 'native' && x.format === fmt && x.q === 80);
+          if (!e) return `${fmt}: n/a`;
+          return e.support === 'ok' ? `${fmt}@q80: ${kb(e.sizeFull)} in ${e.msFull}ms` : `${fmt}: ${e.support === 'silent' ? `silent→${e.actualType}` : 'unsupported'}`;
+        };
+        return `${r.file} (${r.width}×${r.height}): ${['jpeg', 'webp', 'avif'].map(line).join(' · ')}`;
+      }).join('\n');
+      const text = `Encode-matrix result — ${deviceInfo.browser} ${deviceInfo.browserVersion} (${deviceInfo.engine}) on ${deviceInfo.os}, ${deviceInfo.cores ?? '?'} cores, ${deviceInfo.gpu ?? 'GPU n/a'}\n${summary}`;
+      ($('#copy') as HTMLButtonElement).onclick = async () => {
+        await navigator.clipboard.writeText(text);
+        $('#copy-note').textContent = 'Summary copied — the full JSON has the complete matrix (use Download).';
+      };
+      ($('#email') as HTMLAnchorElement).href =
+        `mailto:dev@pixkeep.app?subject=${encodeURIComponent(`Encode-matrix result: ${deviceInfo.browser} on ${deviceInfo.os}`)}` +
+        `&body=${encodeURIComponent(text + '\n\n(Full JSON attached / paste it here — Download JSON button.)')}`;
+    }
+
+    // ─── Orchestration ─────────────────────────────────────────────────────
+    async function collectSources(): Promise<Array<{ name: string; source: string; blob: Blob }>> {
+      const out: Array<{ name: string; source: string; blob: Blob }> = [];
+      for (const f of Array.from(fileInput.files || [])) {
+        out.push({ name: f.name, source: 'local file', blob: await fileToMemoryBlob(f) });
+      }
+      for (const key of selectedSamples()) {
+        const s = SAMPLES.find((x) => x.key === key)!;
+        status(`fetching sample ${key} (${(s.bytes / 1048576).toFixed(1)} MB)…`);
+        // Retry with backoff — CDN fetches occasionally die mid-handshake on
+        // flaky networks (ERR_CONNECTION_CLOSED), and a 25 MB sample is worth
+        // more than one attempt.
+        let resp: Response | null = null;
+        let lastErr: unknown;
+        for (let attempt = 0; attempt < 3 && !resp; attempt++) {
+          try {
+            const r = await fetch(`${CDN}/${key}.png`);
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            resp = r;
+          } catch (e) {
+            lastErr = e;
+            status(`fetching sample ${key} — attempt ${attempt + 1} failed (${(e as Error)?.message || e}), retrying…`);
+            await new Promise((r2) => setTimeout(r2, 1000 * (attempt + 1)));
+          }
+        }
+        if (!resp) throw new Error(`sample fetch failed: ${key} (${(lastErr as Error)?.message || lastErr})`);
+        out.push({ name: `${key}.png`, source: `${CDN}/${key}.png`, blob: await resp.blob() });
+      }
+      return out;
+    }
+
+    let running = false;
+    async function run() {
+      if (running) return;
+      running = true;
+      runBtn.disabled = true;
+      resultsEl.innerHTML = '';
+      const fullAvif = ($('#full-avif') as HTMLInputElement).checked || new URLSearchParams(location.search).get('fullAvif') === '1';
+      try {
+        const sources = await collectSources();
+        if (sources.length === 0) { status('no images selected'); return; }
+        const results: PhotoResult[] = [];
+        let stepCount = 0;
+        const totalSteps = sources.length * FORMATS.length * QUALITY_LEVELS.length * 2;
+        for (let i = 0; i < sources.length; i++) {
+          const s = sources[i];
+          try {
+            status(`[${i + 1}/${sources.length}] decoding ${s.name}…`);
+            const canvas = await blobToCanvas(s.blob);
+            const r = await runPhoto(s.name, s.source, canvas, fullAvif, (step) => {
+              stepCount++;
+              progress(stepCount / totalSteps);
+              status(`[${i + 1}/${sources.length}] ${s.name} — ${step}`);
+            });
+            results.push(r);
+          } catch (e) {
+            results.push({ file: s.name, source: s.source, entries: [], error: (e as Error)?.message || String(e) });
+          }
+          renderPhoto(results[results.length - 1]);
+        }
+        const result = { benchVersion: 1, generatedAt: new Date().toISOString(), device: deviceInfo, results };
+        (window as any).__benchEncodeResult = result;
+        status(`done: ${results.length} image(s), ${results.filter((r) => r.error).length} failed`);
+        progress(1);
+        setupShare(result);
+      } catch (e) {
+        status(`fatal: ${(e as Error)?.message || e}`);
+      } finally {
+        running = false;
+        runBtn.disabled = false;
+      }
+    }
+    runBtn.addEventListener('click', run);
+
+    // ─── Automation hooks (Playwright) ─────────────────────────────────────
+    // ?samples=all|flower1,grass1&autorun=1 — fetch reference set and run without
+    // any user interaction; result lands in window.__benchEncodeResult.
+    (window as any).__benchEncodeProgress = 'idle';
+    const params = new URLSearchParams(location.search);
+    const sampleParam = params.get('samples');
+    if (sampleParam) {
+      const keys = sampleParam === 'all' ? SAMPLES.map((s) => s.key) : sampleParam.split(',').filter((k) => SAMPLES.some((s) => s.key === k));
+      for (const box of samplesEl.querySelectorAll('input')) {
+        (box as HTMLInputElement).checked = keys.includes((box as HTMLInputElement).value);
+      }
+      refreshRunBtn();
+      if (params.get('autorun') === '1') run();
+    }
+  </script>
+</Base>

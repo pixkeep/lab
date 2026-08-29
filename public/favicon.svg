@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Shield -->
+  <path d="M50 6 L90 22 L90 50 C90 71 73 87 50 96 C27 87 10 71 10 50 L10 22 Z" fill="#2563eb"/>
+  <!-- Mountain landscape inside shield -->
+  <path d="M26 70 L42 44 L54 55 L68 36 L82 70 Z" fill="#fff"/>
+  <!-- Sun -->
+  <circle cx="65" cy="33" r="7" fill="#fff"/>
+</svg>

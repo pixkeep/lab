@@ -1,0 +1,142 @@
+---
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content={canonical} />
+  <style is:global>
+    :root {
+      --navy-0: #0c1929;
+      --navy-1: #132238;
+      --navy-2: #1a2d47;
+      --accent: #3b82f6;
+      --accent-deep: #2563eb;
+      --ink: #1f2937;
+      --ink-soft: #4b5563;
+      --paper: #f8fafc;
+      --card: #ffffff;
+      --line: #e2e8f0;
+      --good: #059669;
+      --warn: #d97706;
+      --bad: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+    a { color: var(--accent-deep); }
+    code { background: #eef2f7; border-radius: 4px; padding: 0.1em 0.35em; font-size: 0.9em; }
+
+    .site-header {
+      background: linear-gradient(135deg, var(--navy-0), var(--navy-1) 55%, var(--navy-2));
+      color: #e2e8f0;
+      padding: 14px 0;
+    }
+    .site-header .wrap { display: flex; align-items: center; gap: 12px; }
+    .site-header img { height: 30px; width: auto; display: block; }
+    .site-header .brand { font-weight: 700; font-size: 1.05rem; color: #fff; text-decoration: none; }
+    .site-header .brand span { color: var(--accent); }
+    .site-header nav { margin-left: auto; display: flex; gap: 18px; font-size: 0.92rem; }
+    .site-header nav a { color: #cbd5e1; text-decoration: none; }
+    .site-header nav a:hover { color: #fff; }
+
+    .wrap { max-width: 980px; margin: 0 auto; padding: 0 20px; }
+    main { padding: 32px 0 64px; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin: 20px 0;
+    }
+    .card h2 { margin-top: 0; font-size: 1.15rem; }
+
+    .btn {
+      display: inline-block;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent-deep);
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 10px 20px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn:hover { background: var(--accent); }
+    .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+    .btn.ghost {
+      background: transparent;
+      color: var(--accent-deep);
+      border: 1px solid var(--accent-deep);
+    }
+    .btn.ghost:hover { background: #eff6ff; }
+
+    table.data { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+    table.data th, table.data td { border: 1px solid var(--line); padding: 6px 10px; text-align: right; }
+    table.data th { background: #f1f5f9; text-align: center; }
+    table.data td:first-child, table.data th:first-child { text-align: left; }
+
+    .badge { display: inline-block; border-radius: 999px; font-size: 0.75rem; font-weight: 600; padding: 1px 10px; }
+    .badge.ok { background: #d1fae5; color: var(--good); }
+    .badge.warn { background: #fef3c7; color: var(--warn); }
+    .badge.bad { background: #fee2e2; color: var(--bad); }
+
+    .muted { color: var(--ink-soft); font-size: 0.9rem; }
+
+    .site-footer {
+      border-top: 1px solid var(--line);
+      padding: 24px 0 40px;
+      font-size: 0.85rem;
+      color: var(--ink-soft);
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <img src="/logo.svg" alt="PixKeep logo" />
+      <a class="brand" href="/">PixKeep <span>Lab</span></a>
+      <nav>
+        <a href="https://pixkeep.app">PixKeep tools</a>
+        <a href="https://github.com/pixkeep/lab">GitHub</a>
+        <a href="https://github.com/pixkeep/lab/discussions">Discussions</a>
+      </nav>
+    </div>
+  </header>
+  <main class="wrap">
+    <slot />
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>
+        PixKeep Lab is the open benchmark playground of
+        <a href="https://pixkeep.app">PixKeep</a> — privacy-first image tools that
+        run entirely in your browser. Everything on this page runs locally too:
+        no uploads, no tracking of your photos.
+      </p>
+      <p>Source: <a href="https://github.com/pixkeep/lab">github.com/pixkeep/lab</a> · MIT licensed</p>
+    </div>
+  </footer>
+</body>
+</html>
