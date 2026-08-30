@@ -6,6 +6,14 @@ import Base from '../layouts/Base.astro';
   description="How good is the image encoder built into your browser? canvas.toBlob JPEG / WebP / AVIF at six quality levels, measured against WASM reference encoders (MozJPEG, libwebp, @jsquash-avif): byte sizes, encode latency, DSSIM quality. Everything runs locally."
 >
   <h1>Native vs WASM image encoder benchmark</h1>
+  {import.meta.env.DEV && (
+    <div class="card devwarn">
+      <strong>Dev mode.</strong> The WASM reference encoders do not work under
+      <code>npm run dev</code> (Vite serves <code>.wasm</code> as HTML to workers —
+      known limitation). The native columns are still real; WASM results are not.
+      Real runs: <code>npm run build &amp;&amp; npm run preview</code>, or the live site.
+    </div>
+  )}
   <p class="muted">
     How good is the image encoder built into <em>your</em> browser? Pick some photos,
     or use our reference images. This page encodes them with your browser's built-in
@@ -101,6 +109,7 @@ import Base from '../layouts/Base.astro';
   <style is:global>
     /* is:global — these rules target JS-created nodes, which never receive
        Astro's scoped-style attributes (scoped selectors silently miss them). */
+    .devwarn { border-left: 4px solid #d4a017; background: #fff8e6; }
     .env-grid { display: grid; grid-template-columns: 160px 1fr; gap: 4px 16px; margin: 0; font-size: 0.92rem; }
     .env-grid dt { color: var(--ink-soft); }
     .env-grid dd { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.86rem; }
@@ -348,6 +357,13 @@ import Base from '../layouts/Base.astro';
         return;
       }
       let html = `<h3>${r.file}</h3><p class="muted">${r.width}×${r.height} · source: ${r.source}</p>`;
+      const wasmAll = r.entries.filter((e) => e.group === 'wasm');
+      const wasmDead = wasmAll.filter((e) => e.support === 'unsupported');
+      if (wasmDead.length > 0 && wasmDead.length === wasmAll.length) {
+        html += `<p class="badge bad">WASM encoders failed</p><p class="muted">First failure (of ${wasmDead.length}): ${(wasmDead[0].actualType || 'unknown').slice(0, 240)}</p>`;
+      } else if (wasmDead.length > 0) {
+        html += `<p class="muted">⚠ ${wasmDead.length} of ${wasmAll.length} WASM runs failed — see the console, or the JSON's actualType fields.</p>`;
+      }
       for (const { key, wasm } of FORMATS) {
         const nat = r.entries.filter((e) => e.group === 'native' && e.format === key);
         if (nat.length === 0) continue; // format not selected for this run
