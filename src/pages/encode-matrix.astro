@@ -344,7 +344,7 @@ import Base from '../layouts/Base.astro';
     const kb = (n?: number) => (n == null ? '—' : n >= 1048576 ? `${(n / 1048576).toFixed(2)} MB` : `${Math.round(n / 1024)} KB`);
     const ds = (n?: number) => (n == null ? '—' : n.toFixed(4));
     function badge(s: Support, actual?: string) {
-      if (s === 'ok') return '<span class="badge ok">native ok</span>';
+      if (s === 'ok') return '<span class="badge ok">supported</span>';
       if (s === 'silent') return `<span class="badge warn">silent → ${actual || 'PNG'}</span>`;
       return '<span class="badge bad">unsupported</span>';
     }
