@@ -41,7 +41,11 @@ npx playwright install
 BENCH_SAMPLES=graphic-text npx playwright test --project=chromium   # smoke
 npx playwright test --project=chromium                              # full reference images
 BENCH_LIVE=1 npx playwright test --project=webkit                   # against the live site
+BENCH_BASE=http://localhost:4333 npx playwright test                # target a server you started yourself
 ```
+
+The "partial format selection" test uses a local fixture (`tests/fixtures/tiny.png`) so
+it stays hermetic; the data-collection test pulls the real reference images from the CDN.
 
 JSON results land in `tmp/encode-bench-<project>-<timestamp>.json`.
 

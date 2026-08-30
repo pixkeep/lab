@@ -361,6 +361,7 @@ import Base from '../layouts/Base.astro';
       let html = `<h3>${r.file}</h3><p class="muted">${r.width}×${r.height} · source: ${r.source}</p>`;
       for (const { key, wasm } of FORMATS) {
         const nat = r.entries.filter((e) => e.group === 'native' && e.format === key);
+        if (nat.length === 0) continue; // format not selected for this run
         const support = nat.find((e) => e.q === 80)?.support ?? 'ok';
         const actual = nat.find((e) => e.q === 80)?.actualType;
         html += `<div class="fmt-head"><h4>${key.toUpperCase()}</h4>${badge(support, actual)}<span class="muted">WASM reference: ${wasm}</span></div>`;
@@ -401,7 +402,7 @@ import Base from '../layouts/Base.astro';
         };
         return `${r.file} (${r.width}×${r.height}): ${['jpeg', 'webp', 'avif'].map(line).join(' · ')}`;
       }).join('\n');
-      const text = `Encode-matrix result — ${deviceInfo.browser} ${deviceInfo.browserVersion} (${deviceInfo.engine}) on ${deviceInfo.os}, ${deviceInfo.cores ?? '?'} cores, ${deviceInfo.gpu ?? 'GPU n/a'}\n${summary}`;
+      const text = `Native vs WASM encoder result — ${deviceInfo.browser} ${deviceInfo.browserVersion} (${deviceInfo.engine}) on ${deviceInfo.os}, ${deviceInfo.cores ?? '?'} cores, ${deviceInfo.gpu ?? 'GPU n/a'}\n${summary}`;
       ($('#copy') as HTMLButtonElement).onclick = async () => {
         await navigator.clipboard.writeText(text);
         $('#copy-note').textContent = 'Summary copied — the full JSON has the complete matrix (use Download).';
@@ -425,9 +426,14 @@ import Base from '../layouts/Base.astro';
         // more than one attempt.
         let resp: Response | null = null;
         let lastErr: unknown;
+        // AbortSignal.timeout guards against a stalled connection: a TCP hang
+        // never rejects, so without it the retry loop above never runs and the
+        // page sits on "fetching…" forever. 5 min per attempt is generous for
+        // a 25 MB sample on a slow-but-working link.
+        const fetchOpts = () => (AbortSignal.timeout ? { signal: AbortSignal.timeout(300_000) } : {});
         for (let attempt = 0; attempt < 3 && !resp; attempt++) {
           try {
-            const r = await fetch(`${CDN}/${key}.png`);
+            const r = await fetch(`${CDN}/${key}.png`, fetchOpts());
             if (!r.ok) throw new Error(`HTTP ${r.status}`);
             resp = r;
           } catch (e) {
