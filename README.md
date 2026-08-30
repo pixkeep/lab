@@ -61,6 +61,17 @@ JSON results land in `tmp/encode-bench-<project>-<timestamp>.json`.
   (analysis frame, unmeasured) absorbs worker startup and `.wasm` compilation.
 - Quality scales are **not** comparable across encoders — compare at matched DSSIM.
 
+## Deploy
+
+Production is a Cloudflare **Workers** project (static-assets upload, name
+`red-meadow-d766`, custom domain `lab.pixkeep.app`). `public/_headers` carries the CSP
+and is served on deploy — see its comment before touching `script-src`
+(mozjpeg's emscripten glue needs `'unsafe-eval'`).
+
+```bash
+npm run build && npx wrangler deploy   # needs `npx wrangler login` once
+```
+
 ## License
 
 MIT
