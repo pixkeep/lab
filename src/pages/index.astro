@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 ---
 <Base
   title="PixKeep Lab — open in-browser image-codec experiments"
-  description="Public, reproducible benchmarks of what browsers actually do when they encode images: canvas.toBlob support, quality adherence, and WASM encoder control groups. Run them on your own device, with your own photos."
+  description="Public, reproducible benchmarks of what browsers actually do when they encode images: canvas.toBlob support, quality adherence, and WASM reference encoders. Run them on your own device, with your own photos."
 >
   <h1>PixKeep Lab</h1>
   <p class="muted">
@@ -13,19 +13,20 @@ import Base from '../layouts/Base.astro';
   </p>
 
   <div class="card">
-    <h2>🧪 Encode matrix</h2>
+    <h2>🧪 Native vs WASM image encoder benchmark</h2>
     <p>
-      What does <code>canvas.toBlob('image/jpeg' | 'image/webp' | 'image/avif', quality)</code>
-      really do in your browser? Six quality levels, three formats, native encoder vs
-      WASM control group (MozJPEG / libwebp / @jsquash-avif), with byte sizes, encode
-      latency and DSSIM quality scores.
+      How good is the image encoder built into your browser?
+      <code>canvas.toBlob('image/jpeg' | 'image/webp' | 'image/avif', quality)</code>
+      at six quality levels, measured against WASM reference encoders
+      (MozJPEG / libwebp / @jsquash-avif): byte sizes, encode latency and DSSIM
+      quality scores, on your photos or a set of shared reference images.
     </p>
     <p>
       Known catches so far: Safari ignores the WebP quality parameter entirely;
       no stable browser honours <code>toBlob('image/avif')</code> on the main thread
       (they silently hand you a PNG). Run it on yours:
     </p>
-    <p><a class="btn" href="/encode-matrix/">Run the encode matrix →</a></p>
+    <p><a class="btn" href="/encode-matrix/">Run the benchmark →</a></p>
   </div>
 
   <div class="card">

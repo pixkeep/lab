@@ -2,17 +2,20 @@
 import Base from '../layouts/Base.astro';
 ---
 <Base
-  title="Encode matrix — what canvas.toBlob really does in your browser · PixKeep Lab"
-  description="Measure your browser's native image encoders: JPEG / WebP / AVIF via canvas.toBlob across six quality levels, against a WASM control group (MozJPEG, libwebp, @jsquash-avif). Byte sizes, encode latency, DSSIM quality. Everything runs locally."
+  title="Native vs WASM image encoder benchmark — PixKeep Lab"
+  description="How good is the image encoder built into your browser? canvas.toBlob JPEG / WebP / AVIF at six quality levels, measured against WASM reference encoders (MozJPEG, libwebp, @jsquash-avif): byte sizes, encode latency, DSSIM quality. Everything runs locally."
 >
-  <h1>Encode matrix</h1>
+  <h1>Native vs WASM image encoder benchmark</h1>
   <p class="muted">
-    <code>canvas.toBlob('image/jpeg' | 'image/webp' | 'image/avif', quality)</code> is the
-    only encoder every web app gets for free — but what it actually produces varies wildly
-    by browser. This experiment measures your browser across
-    <strong>6 quality levels × 3 formats × 2 encoder paths</strong>
-    (native toBlob vs WASM control group) and reports output bytes, encode latency and
-    DSSIM quality. Nothing is uploaded; your photos never leave this page.
+    How good is the image encoder built into <em>your</em> browser? Pick some photos,
+    or use our reference images. This page encodes them with your browser's built-in
+    image encoder — <code>canvas.toBlob()</code> — in three formats (JPEG, WebP, AVIF),
+    six quality levels each. Then it encodes the same pixels again with the
+    <strong>reference encoders</strong> compiled to WASM (MozJPEG, libwebp, libavif),
+    so you can compare your browser against known-good implementations.
+    You get output bytes, encode latency and DSSIM quality for both paths, measured on
+    your machine and your browser version. Nothing is uploaded; your photos never leave
+    this page.
   </p>
 
   <div class="card" id="env-card">
@@ -34,7 +37,7 @@ import Base from '../layouts/Base.astro';
         <input type="file" id="files" multiple accept="image/*" />
       </div>
       <div>
-        <h3>Reference set <span class="muted">(served from cdn.pixkeep.app)</span></h3>
+        <h3>Reference images <span class="muted">(served from cdn.pixkeep.app)</span></h3>
         <p class="muted">The same four images our published numbers use — comparable across devices.</p>
         <div id="samples"></div>
       </div>
@@ -83,7 +86,7 @@ import Base from '../layouts/Base.astro';
     <ul class="muted">
       <li><strong>Quality scales are not comparable across encoders.</strong> "q80" in Chromium's JPEG encoder, MozJPEG and libwebp are three different points on three curves. Compare formats at matched DSSIM, not matched q.</li>
       <li><strong>Support is detected by the returned blob's type</strong> — browsers that can't encode a format silently return PNG instead of throwing.</li>
-      <li><strong>WASM control group:</strong> MozJPEG (<code>@wasm-codecs/mozjpeg</code>), libwebp (<code>@jsquash/webp</code>), AVIF (<code>@jsquash/avif</code>) — encoded on the <em>same</em> analysis frame as native (identical DSSIM framing), plus one full-res timing run at q60 (AVIF opt-in).</li>
+      <li><strong>WASM reference encoders:</strong> MozJPEG (<code>@wasm-codecs/mozjpeg</code>), libwebp (<code>@jsquash/webp</code>), AVIF (<code>@jsquash/avif</code>) — encoded on the <em>same</em> analysis frame as native (identical DSSIM framing), plus one full-res timing run at q60 (AVIF opt-in).</li>
       <li>Full resolution is timed as median of 3 runs. Quality is scored as DSSIM against a center-square crop of the source (capped at 1200px — same framing for every encode).</li>
       <li>Timings: median of 3 full-resolution encodes, warm JIT. DevTools closed.</li>
     </ul>
@@ -99,7 +102,18 @@ import Base from '../layouts/Base.astro';
     .pick { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     @media (max-width: 760px) { .pick { grid-template-columns: 1fr; } }
     .pick h3 { margin: 0 0 6px; font-size: 1rem; }
-    #samples label { display: flex; gap: 8px; align-items: baseline; padding: 3px 0; font-size: 0.92rem; }
+    #samples { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    #samples .sample { position: relative; display: block; margin: 0; cursor: pointer; border: 2px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; transition: border-color 0.15s; }
+    #samples .sample:hover { border-color: #b9c6d4; }
+    #samples .sample input { position: absolute; opacity: 0; pointer-events: none; }
+    #samples .sample img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+    #samples .sample-name { position: absolute; left: 6px; bottom: 6px; background: rgba(12, 25, 41, 0.85); color: #fff; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    #samples .sample-tip { position: absolute; left: 6px; right: 6px; top: 6px; background: rgba(12, 25, 41, 0.92); color: #dbe7f5; font-size: 0.75rem; line-height: 1.35; padding: 6px 9px; border-radius: 8px; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
+    #samples .sample:hover .sample-tip, #samples .sample:focus-within .sample-tip { opacity: 1; }
+    #samples .sample:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
+    #samples .sample:has(input:checked) { border-color: var(--accent-deep); }
+    #samples .sample::after { content: '✓'; position: absolute; right: 6px; bottom: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; display: grid; place-items: center; opacity: 0; transition: opacity 0.15s; }
+    #samples .sample:has(input:checked)::after { opacity: 1; }
     .progress { height: 8px; background: #e5eaf1; border-radius: 999px; overflow: hidden; margin: 12px 0 8px; }
     #progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-deep), var(--accent)); transition: width 0.3s; }
     #status { white-space: pre-wrap; font-size: 0.85rem; background: var(--navy-0); color: #dbe7f5; border-radius: 8px; padding: 10px 14px; margin: 0; }
@@ -125,10 +139,10 @@ import Base from '../layouts/Base.astro';
     const ANALYSIS_SIZE = 1200;
     const CDN = 'https://cdn.pixkeep.app/bench-encode';
     const SAMPLES = [
-      { key: 'flower1', label: 'flower1 — 12MP flower photo', bytes: 22906732 },
-      { key: 'grass1', label: 'grass1 — 12MP grass photo', bytes: 24649588 },
-      { key: 'graphic-text', label: 'graphic-text — synthetic UI/text', bytes: 113703 },
-      { key: 'alpha-transparent', label: 'alpha-transparent — RGBA test', bytes: 73705 },
+      { key: 'flower1', desc: '12MP flower photo · 3024×4032', bytes: 22906732, thumb: 'flower1.jpg' },
+      { key: 'grass1', desc: '12MP grass photo · 3024×4032', bytes: 24649588, thumb: 'grass1.jpg' },
+      { key: 'graphic-text', desc: 'synthetic UI/text · 2400×1600', bytes: 113703, thumb: 'graphic-text.jpg' },
+      { key: 'alpha-transparent', desc: 'RGBA transparency test · 2000×2000', bytes: 73705, thumb: 'alpha-transparent.png' },
     ];
 
     type Support = 'ok' | 'silent' | 'unsupported';
@@ -170,7 +184,14 @@ import Base from '../layouts/Base.astro';
     const samplesEl = $('#samples');
     for (const s of SAMPLES) {
       const label = document.createElement('label');
-      label.innerHTML = `<input type="checkbox" value="${s.key}" /> <span>${s.label} <span class="muted">(${(s.bytes / 1048576).toFixed(1)} MB)</span></span>`;
+      label.className = 'sample';
+      const meta = `${s.desc} · ${(s.bytes / 1048576).toFixed(1)} MB`;
+      label.title = meta; // native tooltip fallback / a11y
+      label.innerHTML = `
+        <input type="checkbox" value="${s.key}" />
+        <img src="/thumbs/${s.thumb}" alt="${s.key}" loading="lazy" />
+        <span class="sample-name">${s.key}</span>
+        <span class="sample-tip">${meta}</span>`;
       samplesEl.appendChild(label);
     }
     const selectedSamples = () =>
@@ -224,9 +245,10 @@ import Base from '../layouts/Base.astro';
 
 
     // Center-square cover-crop of the source, capped at ANALYSIS_SIZE — the
-    // shared framing for every DSSIM comparison. Scale-invariant by
-    // construction: the WASM control group encodes at ≤2000px, and cropping
-    // center-squares of different resolutions still frames the same content.
+    // shared framing for every DSSIM comparison. Native encodes the full-res
+    // frame (any aspect ratio), WASM encodes this same square; both are scored
+    // against center squares of identical content, so DSSIM stays comparable
+    // across source resolutions and aspect ratios.
     async function prepAnalysis(canvas: HTMLCanvasElement): Promise<{ canvas: HTMLCanvasElement; ref: Blob }> {
       const side = Math.min(ANALYSIS_SIZE, canvas.width, canvas.height);
       const out = document.createElement('canvas');
@@ -333,7 +355,7 @@ import Base from '../layouts/Base.astro';
         const nat = r.entries.filter((e) => e.group === 'native' && e.format === key);
         const support = nat.find((e) => e.q === 80)?.support ?? 'ok';
         const actual = nat.find((e) => e.q === 80)?.actualType;
-        html += `<div class="fmt-head"><h4>${key.toUpperCase()}</h4>${badge(support, actual)}<span class="muted">WASM control: ${wasm}</span></div>`;
+        html += `<div class="fmt-head"><h4>${key.toUpperCase()}</h4>${badge(support, actual)}<span class="muted">WASM reference: ${wasm}</span></div>`;
         if (support !== 'ok') {
           const p80 = nat.find((e) => e.q === 80);
           html += `<p class="muted">native toBlob returned ${p80?.actualType ?? 'nothing'}${p80?.sizeFull ? ` (${kb(p80.sizeFull)})` : ''} for every quality level — see WASM column for what real ${key.toUpperCase()} encoding costs.</p>`;
@@ -456,7 +478,7 @@ import Base from '../layouts/Base.astro';
     runBtn.addEventListener('click', run);
 
     // ─── Automation hooks (Playwright) ─────────────────────────────────────
-    // ?samples=all|flower1,grass1&autorun=1 — fetch reference set and run without
+    // ?samples=all|flower1,grass1&autorun=1 — fetch reference images and run without
     // any user interaction; result lands in window.__benchEncodeResult.
     (window as any).__benchEncodeProgress = 'idle';
     const params = new URLSearchParams(location.search);

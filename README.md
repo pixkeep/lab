@@ -8,11 +8,11 @@ Browsers all claim to support the same image APIs. Lab measures what they **actu
 
 | Route | What it measures |
 |---|---|
-| [`/encode-matrix/`](https://lab.pixkeep.app/encode-matrix/) | `canvas.toBlob` JPEG/WebP/AVIF across 6 quality levels — native vs WASM control group (MozJPEG / libwebp / @jsquash-avif): bytes, latency, DSSIM |
+| [`/encode-matrix/`](https://lab.pixkeep.app/encode-matrix/) | `canvas.toBlob` JPEG/WebP/AVIF across 6 quality levels — native vs WASM reference encoders (MozJPEG / libwebp / @jsquash-avif): bytes, latency, DSSIM |
 
 ## Run it yourself
 
-Open https://lab.pixkeep.app/encode-matrix/ — use your own photos or the reference set
+Open https://lab.pixkeep.app/encode-matrix/ — use your own photos or the reference images
 (served from `cdn.pixkeep.app`, the same four images our published numbers use).
 Results stay on your device; sharing is opt-in via the Download/Copy/Email buttons.
 
@@ -27,7 +27,7 @@ npm run dev        # http://localhost:4322 (4322, not the Astro default — stay
 
 > **Dev-mode caveat:** `npm run dev` (Vite dev) is for UI work only — the
 > @jsquash WASM codecs (libwebp / AVIF) fail to instantiate their .wasm there,
-> so the WASM control group renders empty. MozJPEG works. For real benchmark
+> so the WASM reference encoders render empty. MozJPEG works. For real benchmark
 > runs use the production build (`npm run build && npm run preview`) or the
 > live site. This mirrors the main pixkeep.app repo's dev-mode limitations.
 
@@ -39,7 +39,7 @@ The bench drives itself in the browser; the spec opens the page with
 ```bash
 npx playwright install
 BENCH_SAMPLES=graphic-text npx playwright test --project=chromium   # smoke
-npx playwright test --project=chromium                              # full reference set
+npx playwright test --project=chromium                              # full reference images
 BENCH_LIVE=1 npx playwright test --project=webkit                   # against the live site
 ```
 
@@ -52,7 +52,7 @@ JSON results land in `tmp/encode-bench-<project>-<timestamp>.json`.
 - **Timing**: median of 3 full-resolution encodes, foreground tab, DevTools closed.
 - **Quality**: DSSIM (block-grid SSIM, kornelski/dssim convention) against a 1200px
   cover-crop analysis reference.
-- **WASM control group** encodes the *same* analysis frame as native (identical DSSIM
+- **WASM reference encoders** encode the *same* analysis frame as native (identical DSSIM
   framing), plus one full-res timing run at q60 (AVIF opt-in via `?fullAvif=1`).
 - Quality scales are **not** comparable across encoders — compare at matched DSSIM.
 
