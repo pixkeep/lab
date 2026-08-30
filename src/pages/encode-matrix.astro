@@ -49,15 +49,19 @@ import Base from '../layouts/Base.astro';
     <p class="muted">
       Full resolution is timed as median of 3 runs. Quality is scored as DSSIM against a
       center-square crop of the source (capped at
-      1200px — the same framing for every encode, so native and WASM paths compare equal). 12MP photos take several minutes — 20+ in Safari.
+      1200px — the same framing for every encode, so native and WASM paths compare equal). A full pass
+      on 12MP photos takes several minutes — 20+ in Safari (JPEG-only is much quicker).
       <strong>Keep this tab in the foreground</strong> (background tabs get throttled and
       pollute the timings).
     </p>
-    <p>
+    <p class="run-row">
       <button class="btn" id="run" disabled>Run benchmark</button>
-      <label class="muted" style="margin-left:12px">
-        <input type="checkbox" id="full-avif" /> also time full-res WASM AVIF (minutes-scale per photo)
-      </label>
+      <span class="fmt-pick">
+        Formats:
+        <label><input type="checkbox" class="fmt" value="jpeg" checked /> JPEG</label>
+        <label><input type="checkbox" class="fmt" value="webp" /> WebP</label>
+        <label><input type="checkbox" class="fmt" value="avif" /> AVIF <span class="muted">(WASM-only; minutes-scale on 12MP)</span></label>
+      </span>
     </p>
     <div class="progress"><div id="progress-bar"></div></div>
     <pre id="status">idle</pre>
@@ -86,7 +90,7 @@ import Base from '../layouts/Base.astro';
     <ul class="muted">
       <li><strong>Quality scales are not comparable across encoders.</strong> "q80" in Chromium's JPEG encoder, MozJPEG and libwebp are three different points on three curves. Compare formats at matched DSSIM, not matched q.</li>
       <li><strong>Support is detected by the returned blob's type</strong> — browsers that can't encode a format silently return PNG instead of throwing.</li>
-      <li><strong>WASM reference encoders:</strong> MozJPEG (<code>@wasm-codecs/mozjpeg</code>), libwebp (<code>@jsquash/webp</code>), AVIF (<code>@jsquash/avif</code>) — encoded on the <em>same</em> analysis frame as native (identical DSSIM framing), plus one full-res timing run at q60 (AVIF opt-in).</li>
+      <li><strong>WASM reference encoders:</strong> MozJPEG (<code>@wasm-codecs/mozjpeg</code>), libwebp (<code>@jsquash/webp</code>), AVIF (<code>@jsquash/avif</code>) — encoded on the <em>same</em> analysis frame as native (identical DSSIM framing), plus one full-res timing run at q60 per format.</li>
       <li>Full resolution is timed as median of 3 runs. Quality is scored as DSSIM against a center-square crop of the source (capped at 1200px — same framing for every encode).</li>
       <li>Timings: median of 3 full-resolution encodes, warm JIT. DevTools closed.</li>
     </ul>
@@ -102,18 +106,21 @@ import Base from '../layouts/Base.astro';
     .pick { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     @media (max-width: 760px) { .pick { grid-template-columns: 1fr; } }
     .pick h3 { margin: 0 0 6px; font-size: 1rem; }
-    #samples { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    #samples .sample { position: relative; display: block; margin: 0; cursor: pointer; border: 2px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; transition: border-color 0.15s; }
+    #samples { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    #samples .sample { position: relative; display: flex; align-items: center; gap: 10px; margin: 0; padding: 6px 10px 6px 6px; cursor: pointer; border: 2px solid var(--line); border-radius: 10px; background: #fff; transition: border-color 0.15s, background 0.15s; }
     #samples .sample:hover { border-color: #b9c6d4; }
     #samples .sample input { position: absolute; opacity: 0; pointer-events: none; }
-    #samples .sample img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
-    #samples .sample-name { position: absolute; left: 6px; bottom: 6px; background: rgba(12, 25, 41, 0.85); color: #fff; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-    #samples .sample-tip { position: absolute; left: 6px; right: 6px; top: 6px; background: rgba(12, 25, 41, 0.92); color: #dbe7f5; font-size: 0.75rem; line-height: 1.35; padding: 6px 9px; border-radius: 8px; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
+    #samples .sample img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; display: block; }
+    #samples .sample-name { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.82rem; }
+    #samples .sample-tip { position: absolute; left: 0; top: calc(100% + 6px); z-index: 5; background: rgba(12, 25, 41, 0.94); color: #dbe7f5; font-size: 0.75rem; line-height: 1.35; padding: 6px 10px; border-radius: 8px; white-space: nowrap; opacity: 0; transition: opacity 0.15s; pointer-events: none; }
     #samples .sample:hover .sample-tip, #samples .sample:focus-within .sample-tip { opacity: 1; }
     #samples .sample:focus-within { outline: 2px solid var(--accent); outline-offset: 1px; }
-    #samples .sample:has(input:checked) { border-color: var(--accent-deep); }
-    #samples .sample::after { content: '✓'; position: absolute; right: 6px; bottom: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; display: grid; place-items: center; opacity: 0; transition: opacity 0.15s; }
+    #samples .sample:has(input:checked) { border-color: var(--accent-deep); background: #eef4fd; }
+    #samples .sample::after { content: '✓'; position: absolute; left: 44px; top: 1px; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; display: grid; place-items: center; opacity: 0; transition: opacity 0.15s; box-shadow: 0 0 0 2px #fff; }
     #samples .sample:has(input:checked)::after { opacity: 1; }
+    .run-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
+    .fmt-pick { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; font-size: 0.92rem; }
+    .fmt-pick label { display: inline-flex; align-items: center; gap: 5px; margin: 0; }
     .progress { height: 8px; background: #e5eaf1; border-radius: 999px; overflow: hidden; margin: 12px 0 8px; }
     #progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-deep), var(--accent)); transition: width 0.3s; }
     #status { white-space: pre-wrap; font-size: 0.85rem; background: var(--navy-0); color: #dbe7f5; border-radius: 8px; padding: 10px 14px; margin: 0; }
@@ -196,11 +203,15 @@ import Base from '../layouts/Base.astro';
     }
     const selectedSamples = () =>
       [...samplesEl.querySelectorAll('input:checked')].map((i) => (i as HTMLInputElement).value);
+    const fmtInputs = [...document.querySelectorAll<HTMLInputElement>('.fmt')];
+    const selectedFormats = () => FORMATS.filter((f) => fmtInputs.some((i) => i.checked && i.value === f.key));
     function refreshRunBtn() {
-      runBtn.disabled = !(fileInput.files!.length > 0 || selectedSamples().length > 0);
+      const hasImages = fileInput.files!.length > 0 || selectedSamples().length > 0;
+      runBtn.disabled = !(hasImages && selectedFormats().length > 0);
     }
     fileInput.addEventListener('change', refreshRunBtn);
     samplesEl.addEventListener('change', refreshRunBtn);
+    for (const i of fmtInputs) i.addEventListener('change', refreshRunBtn);
 
     // ─── Decode helpers (hardened — see repo history for the failure modes) ─
     async function fileToMemoryBlob(file: File): Promise<Blob> {
@@ -273,11 +284,11 @@ import Base from '../layouts/Base.astro';
     }
 
     // ─── Core run ──────────────────────────────────────────────────────────
-    async function runPhoto(name: string, source: string, canvas: HTMLCanvasElement, fullAvif: boolean, onStep: (s: string) => void): Promise<PhotoResult> {
+    async function runPhoto(name: string, source: string, canvas: HTMLCanvasElement, formats: readonly { key: string; mime: string }[], onStep: (s: string) => void): Promise<PhotoResult> {
       const entries: Entry[] = [];
       const { canvas: aCanvas, ref } = await prepAnalysis(canvas);
 
-      for (const { key, mime } of FORMATS) {
+      for (const { key, mime } of formats) {
         const probe = await toBlobP(canvas, mime, 0.8);
         const support: Support = !probe ? 'unsupported' : probe.type !== mime ? 'silent' : 'ok';
         for (const q of QUALITY_LEVELS) {
@@ -304,7 +315,7 @@ import Base from '../layouts/Base.astro';
         }
       }
 
-      for (const { key } of FORMATS) {
+      for (const { key } of formats) {
         for (const q of QUALITY_LEVELS) {
           onStep(`wasm ${key} q${q}`);
           const entry: Entry = { group: 'wasm', format: key, q, support: 'ok' };
@@ -318,18 +329,15 @@ import Base from '../layouts/Base.astro';
           }
           entries.push(entry);
         }
-        // Full-res WASM timing: single q60 run per format (AVIF only on
-        // request — it is minutes-scale on 12MP).
-        if (key !== 'avif' || fullAvif) {
-          onStep(`wasm ${key} full-res timing`);
-          try {
-            const t0 = performance.now();
-            const blob = await wasmEncode(key, canvas, 0.6);
-            const ms = Math.round(performance.now() - t0);
-            const e60 = entries.find((en) => en.group === 'wasm' && en.format === key && en.q === 60);
-            if (e60) { e60.sizeFull = blob.size; e60.msFull = ms; }
-          } catch { /* timing is best-effort */ }
-        }
+        // Full-res WASM timing: single q60 run per format.
+        onStep(`wasm ${key} full-res timing`);
+        try {
+          const t0 = performance.now();
+          const blob = await wasmEncode(key, canvas, 0.6);
+          const ms = Math.round(performance.now() - t0);
+          const e60 = entries.find((en) => en.group === 'wasm' && en.format === key && en.q === 60);
+          if (e60) { e60.sizeFull = blob.size; e60.msFull = ms; }
+        } catch { /* timing is best-effort */ }
       }
       return { file: name, source, width: canvas.width, height: canvas.height, entries };
     }
@@ -440,19 +448,19 @@ import Base from '../layouts/Base.astro';
       running = true;
       runBtn.disabled = true;
       resultsEl.innerHTML = '';
-      const fullAvif = ($('#full-avif') as HTMLInputElement).checked || new URLSearchParams(location.search).get('fullAvif') === '1';
+      const formats = selectedFormats();
       try {
         const sources = await collectSources();
         if (sources.length === 0) { status('no images selected'); return; }
         const results: PhotoResult[] = [];
         let stepCount = 0;
-        const totalSteps = sources.length * FORMATS.length * QUALITY_LEVELS.length * 2;
+        const totalSteps = sources.length * formats.length * QUALITY_LEVELS.length * 2;
         for (let i = 0; i < sources.length; i++) {
           const s = sources[i];
           try {
             status(`[${i + 1}/${sources.length}] decoding ${s.name}…`);
             const canvas = await blobToCanvas(s.blob);
-            const r = await runPhoto(s.name, s.source, canvas, fullAvif, (step) => {
+            const r = await runPhoto(s.name, s.source, canvas, formats, (step) => {
               stepCount++;
               progress(stepCount / totalSteps);
               status(`[${i + 1}/${sources.length}] ${s.name} — ${step}`);
@@ -488,6 +496,7 @@ import Base from '../layouts/Base.astro';
       for (const box of samplesEl.querySelectorAll('input')) {
         (box as HTMLInputElement).checked = keys.includes((box as HTMLInputElement).value);
       }
+      for (const i of fmtInputs) i.checked = true; // automation collects all formats
       refreshRunBtn();
       if (params.get('autorun') === '1') run();
     }

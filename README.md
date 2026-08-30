@@ -53,7 +53,7 @@ JSON results land in `tmp/encode-bench-<project>-<timestamp>.json`.
 - **Quality**: DSSIM (block-grid SSIM, kornelski/dssim convention) against a 1200px
   cover-crop analysis reference.
 - **WASM reference encoders** encode the *same* analysis frame as native (identical DSSIM
-  framing), plus one full-res timing run at q60 (AVIF opt-in via `?fullAvif=1`).
+  framing), plus one full-res timing run at q60 per format.
 - Quality scales are **not** comparable across encoders — compare at matched DSSIM.
 
 ## License
