@@ -53,11 +53,12 @@ JSON results land in `tmp/encode-bench-<project>-<timestamp>.json`.
 
 - **Support detection** by the returned blob's `type` — browsers that can't encode a
   format silently return PNG instead of throwing.
-- **Timing**: median of 3 full-resolution encodes, foreground tab, DevTools closed.
-- **Quality**: DSSIM (block-grid SSIM, kornelski/dssim convention) against a 1200px
-  cover-crop analysis reference.
-- **WASM reference encoders** encode the *same* analysis frame as native (identical DSSIM
-  framing), plus one full-res timing run at q60 per format.
+- **Size & timing**: one measured full-resolution encode per (group × format × quality)
+  cell — native and WASM treated identically. Single run; foreground tab, DevTools closed.
+- **Quality**: DSSIM (block-grid SSIM, kornelski/dssim convention) — scored on a shared
+  1200px center-crop analysis frame so every encoder sees identical framing.
+- **WASM reference encoders** run in dedicated Web Workers. The first encode per format
+  (analysis frame, unmeasured) absorbs worker startup and `.wasm` compilation.
 - Quality scales are **not** comparable across encoders — compare at matched DSSIM.
 
 ## License

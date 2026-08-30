@@ -47,10 +47,11 @@ import Base from '../layouts/Base.astro';
   <div class="card">
     <h2>2 · Run</h2>
     <p class="muted">
-      Full resolution is timed as median of 3 runs. Quality is scored as DSSIM against a
-      center-square crop of the source (capped at
-      1200px — the same framing for every encode, so native and WASM paths compare equal). A full pass
-      on 12MP photos takes several minutes — 20+ in Safari (JPEG-only is much quicker).
+      Each cell is one full-resolution encode — size and time from that single
+      run. Quality (DSSIM) is scored against a shared 1200px center crop, the
+      same framing for every encoder. Single-run timings carry some noise; if a
+      number looks off, run it again. WebP and AVIF on 12MP photos are
+      minutes-scale — AVIF most of all.
       <strong>Keep this tab in the foreground</strong> (background tabs get throttled and
       pollute the timings).
     </p>
@@ -90,9 +91,9 @@ import Base from '../layouts/Base.astro';
     <ul class="muted">
       <li><strong>Quality scales are not comparable across encoders.</strong> "q80" in Chromium's JPEG encoder, MozJPEG and libwebp are three different points on three curves. Compare formats at matched DSSIM, not matched q.</li>
       <li><strong>Support is detected by the returned blob's type</strong> — browsers that can't encode a format silently return PNG instead of throwing.</li>
-      <li><strong>WASM reference encoders:</strong> MozJPEG (<code>@wasm-codecs/mozjpeg</code>), libwebp (<code>@jsquash/webp</code>), AVIF (<code>@jsquash/avif</code>) — encoded on the <em>same</em> analysis frame as native (identical DSSIM framing), plus one full-res timing run at q60 per format.</li>
-      <li>Full resolution is timed as median of 3 runs. Quality is scored as DSSIM against a center-square crop of the source (capped at 1200px — same framing for every encode).</li>
-      <li>Timings: median of 3 full-resolution encodes, warm JIT. DevTools closed.</li>
+      <li><strong>WASM reference encoders:</strong> MozJPEG (<code>@wasm-codecs/mozjpeg</code>), libwebp (<code>@jsquash/webp</code>), AVIF (<code>@jsquash/avif</code>) — both groups encode the full image once per quality for size and time, plus the 1200px analysis frame for DSSIM. The first WASM encode per format absorbs worker startup and <code>.wasm</code> compilation (unmeasured), so timed runs never see a cold start; WASM time includes RGBA extraction and the worker round-trip.</li>
+      <li><strong>One measured run per cell.</strong> No medians, no warm-up repetitions — one shot, honestly labelled. Re-run the bench if you want a second sample; a few percent between runs is expected.</li>
+      <li>Timings: full-resolution encode, warm module, DevTools closed.</li>
     </ul>
     <p class="muted">Found something odd? <a href="https://github.com/pixkeep/lab/discussions">Bring it to Discussions</a> — reproducible oddities become blog posts.</p>
   </div>
@@ -142,7 +143,6 @@ import Base from '../layouts/Base.astro';
       { key: 'webp', mime: 'image/webp', wasm: 'libwebp' },
       { key: 'avif', mime: 'image/avif', wasm: '@jsquash/avif' },
     ] as const;
-    const REPS = 3;
     const ANALYSIS_SIZE = 1200;
     const CDN = 'https://cdn.pixkeep.app/bench-encode';
     const SAMPLES = [
@@ -249,17 +249,12 @@ import Base from '../layouts/Base.astro';
     function toBlobP(canvas: HTMLCanvasElement, mime: string, quality?: number): Promise<Blob | null> {
       return new Promise((resolve) => canvas.toBlob(resolve, mime, quality));
     }
-    function median(xs: number[]): number {
-      const s = [...xs].sort((a, b) => a - b);
-      return s[Math.floor(s.length / 2)];
-    }
 
 
     // Center-square cover-crop of the source, capped at ANALYSIS_SIZE — the
-    // shared framing for every DSSIM comparison. Native encodes the full-res
-    // frame (any aspect ratio), WASM encodes this same square; both are scored
-    // against center squares of identical content, so DSSIM stays comparable
-    // across source resolutions and aspect ratios.
+    // shared framing for every DSSIM comparison. Size and timing encodes use
+    // the full-resolution canvas; only the DSSIM input is cropped here, so
+    // native and WASM scores always refer to identical pixels.
     async function prepAnalysis(canvas: HTMLCanvasElement): Promise<{ canvas: HTMLCanvasElement; ref: Blob }> {
       const side = Math.min(ANALYSIS_SIZE, canvas.width, canvas.height);
       const out = document.createElement('canvas');
@@ -289,6 +284,8 @@ import Base from '../layouts/Base.astro';
       const { canvas: aCanvas, ref } = await prepAnalysis(canvas);
 
       for (const { key, mime } of formats) {
+        // Support probe — also warms the native encoder: one unmeasured
+        // full-res encode before any timed cell.
         const probe = await toBlobP(canvas, mime, 0.8);
         const support: Support = !probe ? 'unsupported' : probe.type !== mime ? 'silent' : 'ok';
         for (const q of QUALITY_LEVELS) {
@@ -297,16 +294,10 @@ import Base from '../layouts/Base.astro';
             if (q === 80 && probe) { entry.sizeFull = probe.size; entry.actualType = probe.type; }
           } else {
             onStep(`native ${key} q${q}`);
-            const times: number[] = [];
-            let size = 0;
-            for (let r = 0; r < REPS; r++) {
-              const t0 = performance.now();
-              const blob = await toBlobP(canvas, mime, q / 100);
-              times.push(performance.now() - t0);
-              size = blob!.size;
-            }
-            entry.sizeFull = size;
-            entry.msFull = Math.round(median(times));
+            const t0 = performance.now();
+            const blob = await toBlobP(canvas, mime, q / 100);
+            entry.msFull = Math.round(performance.now() - t0);
+            entry.sizeFull = blob!.size;
             const aBlob = await toBlobP(aCanvas, mime, q / 100);
             entry.size1200 = aBlob!.size;
             entry.dssim = await tryDssim(ref, aBlob!);
@@ -320,24 +311,22 @@ import Base from '../layouts/Base.astro';
           onStep(`wasm ${key} q${q}`);
           const entry: Entry = { group: 'wasm', format: key, q, support: 'ok' };
           try {
+            // Analysis frame first, unmeasured: the very first encode per format
+            // absorbs worker spawn + .wasm fetch/compile/instantiate, so no timed
+            // cell ever sees a cold start. Then the measured full-res run.
             const aBlob = await wasmEncode(key, aCanvas, q / 100);
             entry.size1200 = aBlob.size;
             entry.dssim = await tryDssim(ref, aBlob);
+            const t0 = performance.now();
+            const fBlob = await wasmEncode(key, canvas, q / 100);
+            entry.msFull = Math.round(performance.now() - t0);
+            entry.sizeFull = fBlob.size;
           } catch (e) {
             entry.support = 'unsupported';
             entry.actualType = (e as Error)?.message || String(e);
           }
           entries.push(entry);
         }
-        // Full-res WASM timing: single q60 run per format.
-        onStep(`wasm ${key} full-res timing`);
-        try {
-          const t0 = performance.now();
-          const blob = await wasmEncode(key, canvas, 0.6);
-          const ms = Math.round(performance.now() - t0);
-          const e60 = entries.find((en) => en.group === 'wasm' && en.format === key && en.q === 60);
-          if (e60) { e60.sizeFull = blob.size; e60.msFull = ms; }
-        } catch { /* timing is best-effort */ }
       }
       return { file: name, source, width: canvas.width, height: canvas.height, entries };
     }
@@ -369,14 +358,16 @@ import Base from '../layouts/Base.astro';
           const p80 = nat.find((e) => e.q === 80);
           html += `<p class="muted">native toBlob returned ${p80?.actualType ?? 'nothing'}${p80?.sizeFull ? ` (${kb(p80.sizeFull)})` : ''} for every quality level — see WASM column for what real ${key.toUpperCase()} encoding costs.</p>`;
         }
-        html += `<table class="data"><thead><tr><th>q</th><th>native full-res</th><th>native time</th><th>native dssim</th><th>wasm size¹</th><th>wasm dssim</th></tr></thead><tbody>`;
+        html += `<table class="data"><thead><tr><th>q</th><th>native size</th><th>native time</th><th>native dssim¹</th><th>wasm size</th><th>wasm time</th><th>wasm dssim¹</th></tr></thead><tbody>`;
         for (const q of QUALITY_LEVELS) {
           const n = nat.find((e) => e.q === q)!;
           const w = r.entries.find((e) => e.group === 'wasm' && e.format === key && e.q === q);
-          html += `<tr><td>${q}</td><td>${support === 'ok' ? kb(n.sizeFull) : '—'}</td><td>${n.msFull != null ? `${n.msFull} ms` : '—'}</td><td>${support === 'ok' ? ds(n.dssim) : '—'}</td><td>${w ? kb(w.size1200) : '—'}</td><td>${w ? ds(w.dssim) : '—'}</td></tr>`;
+          const wok = n.support === 'ok';
+          html += `<tr><td>${q}</td><td>${wok ? kb(n.sizeFull) : '—'}</td><td>${wok ? `${n.msFull} ms` : '—'}</td><td>${wok ? ds(n.dssim) : '—'}</td><td>${w && w.support === 'ok' ? kb(w.sizeFull) : '—'}</td><td>${w && w.support === 'ok' ? `${w.msFull} ms` : '—'}</td><td>${w && w.support === 'ok' ? ds(w.dssim) : '—'}</td></tr>`;
         }
         html += '</tbody></table>';
       }
+      html += `<p class="muted">¹ Sizes and times come from one full-resolution encode per cell. DSSIM is scored against a shared 1200px center crop — the same framing for every encoder. WASM time includes RGBA extraction and the worker round-trip.</p>`;
       card.innerHTML = html;
       resultsEl.appendChild(card);
     }
