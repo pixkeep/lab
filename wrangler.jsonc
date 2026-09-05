@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "red-meadow-d766",
+  "name": "opensource-lab",
   "compatibility_date": "2026-06-01",
   "assets": {
     "directory": "./dist"
