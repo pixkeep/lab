@@ -55,8 +55,11 @@ JSON results land in `tmp/encode-bench-<project>-<timestamp>.json`.
   format silently return PNG instead of throwing.
 - **Size & timing**: one measured full-resolution encode per (group × format × quality)
   cell — native and WASM treated identically. Single run; foreground tab, DevTools closed.
-- **Quality**: DSSIM (block-grid SSIM, kornelski/dssim convention) — scored on a shared
-  1200px center-crop analysis frame so every encoder sees identical framing.
+- **Quality**: DSSIM — the official [dssim-core](https://github.com/kornelski/dssim) v3.4.0
+  kernel via [dssim-wasm](https://github.com/pixkeep/dssim-wasm) (lower = closer) — scored
+  on a shared 1200px center-crop analysis frame so every encoder sees identical framing.
+  dssim's numeric scale changes between versions; cite "dssim-core 3.4.0 via dssim-wasm"
+  when reusing these numbers.
 - **WASM reference encoders** run in dedicated Web Workers. The first encode per format
   (analysis frame, unmeasured) absorbs worker startup and `.wasm` compilation.
 - Quality scales are **not** comparable across encoders — compare at matched DSSIM.
@@ -74,4 +77,9 @@ npm run build && npx wrangler deploy   # needs `npx wrangler login` once
 
 ## License
 
-MIT
+MIT (c) PixKeep — for everything except the DSSIM kernel.
+
+`public/dssim_wasm.wasm` is the official dssim-core v3.4.0 compiled via
+[dssim-wasm](https://github.com/pixkeep/dssim-wasm), licensed **AGPL-3.0** —
+see [third_party/dssim-wasm/](third_party/dssim-wasm/) (LICENSE + NOTICE).
+It is used unmodified as a separate work; it does not relicense this repository.

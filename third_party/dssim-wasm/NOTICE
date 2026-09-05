@@ -1,0 +1,27 @@
+dssim-wasm
+==========
+
+This repository is a thin WebAssembly binding around the official
+**dssim-core v3.4.0** (https://github.com/kornelski/dssim),
+(c) Kornel Lesiński <pornel@pornel.net>.
+
+dssim-core is distributed under:
+- GNU Affero General Public License v3.0 or later (see LICENSE), or
+- a commercial license available from the author
+  (https://kornel.ski/dssim#licensing)
+
+**dssim-core is used UNMODIFIED.** This repository contains no changes to
+the upstream library; it adds only:
+
+- a tiny allocation shim (`dssim_alloc`) for JS-side pixel transfer
+- build/metadata glue (Cargo.toml, crate-type cdylib)
+- benchmark and verification tooling (bench/)
+
+The binding glue and the tooling in this repository are
+(c) PixKeep, licensed under AGPL-3.0 (see LICENSE).
+
+The official dssim core states that its numeric output is not directly
+comparable to other tools, and that published values should cite the
+implementation and version (version changes alter the scale of results).
+This binding inherits that property: pin dssim-core to exactly 3.4.0 and
+cite "dssim-core 3.4.0 via dssim-wasm" when publishing numbers.

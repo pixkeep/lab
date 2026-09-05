@@ -383,7 +383,7 @@ import Base from '../layouts/Base.astro';
         }
         html += '</tbody></table>';
       }
-      html += `<p class="muted">¹ Sizes and times come from one full-resolution encode per cell. DSSIM is scored against a shared 1200px center crop — the same framing for every encoder. WASM time includes RGBA extraction and the worker round-trip.</p>`;
+      html += `<p class="muted">¹ Sizes and times come from one full-resolution encode per cell. DSSIM is scored against a shared 1200px center crop — the same framing for every encoder — using the official dssim-core 3.4.0 kernel (dssim-wasm). WASM time includes RGBA extraction and the worker round-trip.</p>`;
       card.innerHTML = html;
       resultsEl.appendChild(card);
     }
