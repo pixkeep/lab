@@ -437,10 +437,19 @@ import Base from '../layouts/Base.astro';
         // never rejects, so without it the retry loop above never runs and the
         // page sits on "fetching…" forever. 5 min per attempt is generous for
         // a 25 MB sample on a slow-but-working link.
-        const fetchOpts = () => (AbortSignal.timeout ? { signal: AbortSignal.timeout(300_000) } : {});
+        // no-store: WebKit serves direct-navigation cache copies (missing
+        // ACAO) to CORS fetches of the same URL — the CDN's Cache-Control:
+        // no-cache (worker route on /bench-encode/*) is the root fix, this
+        // bypasses any stale copy already on disk. 22 MB benchmark files
+        // have no use for the browser cache anyway. ?retry=N on retries:
+        // cache-busting double-insurance against CDN config drift.
+        const fetchOpts = () => ({
+          cache: 'no-store' as RequestCache,
+          ...(AbortSignal.timeout ? { signal: AbortSignal.timeout(300_000) } : {}),
+        });
         for (let attempt = 0; attempt < 3 && !resp; attempt++) {
           try {
-            const r = await fetch(`${CDN}/${key}.png`, fetchOpts());
+            const r = await fetch(`${CDN}/${key}.png${attempt ? `?retry=${attempt + 1}` : ''}`, fetchOpts());
             if (!r.ok) throw new Error(`HTTP ${r.status}`);
             resp = r;
           } catch (e) {
