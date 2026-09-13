@@ -47,7 +47,26 @@ BENCH_BASE=http://localhost:4333 npx playwright test                # target a s
 The "partial format selection" test uses a local fixture (`tests/fixtures/tiny.png`) so
 it stays hermetic; the data-collection test pulls the real reference images from the CDN.
 
-JSON results land in `tmp/encode-bench-<project>-<timestamp>.json`.
+JSON results land in `tmp/encode-bench-<project>-<timestamp>.json`. To publish a run set,
+rename it to `YYYY-MM-DD-<platform>-<browser>-<version>.json` and drop it into
+[`public/bench-data/`](public/bench-data/) — see that directory's README for the run protocol
+and the rules for citing the numbers.
+
+## Benchmark data
+
+[`public/bench-data/`](public/bench-data/) holds the raw JSON dumps behind the published numbers
+(one file per browser/machine, unmodified exports), served at
+`https://lab.pixkeep.app/bench-data/<file>.json`. This is the data the
+[browser encoder benchmark article](https://pixkeep.app/blog/browser-image-encoder-benchmark/)
+and our product decisions cite.
+
+```bash
+# regenerate the aggregate tables (support matrix, size/time, quality curves, …)
+node scripts/aggregate-encode-bench.mjs                    # defaults to public/bench-data
+node scripts/aggregate-encode-bench.mjs --dir tmp --focus grass1
+```
+
+The data is licensed CC BY 4.0 (the code is MIT) — see `public/bench-data/README.md`.
 
 ## Methodology
 

@@ -1,0 +1,1313 @@
+{
+  "benchVersion": 1,
+  "generatedAt": "2026-09-13T13:30:56.594Z",
+  "device": {
+    "browser": "Safari",
+    "browserVersion": "18.6",
+    "engine": "WebKit",
+    "os": "macOS 10.15.7",
+    "cores": 8,
+    "gpu": "Apple GPU",
+    "screen": "1440x900 @2x",
+    "mobile": false,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Safari/605.1.15"
+  },
+  "results": [
+    {
+      "file": "flower1.png",
+      "source": "https://cdn.pixkeep.app/bench-encode/flower1.png",
+      "width": 3024,
+      "height": 4032,
+      "entries": [
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 10,
+          "support": "ok",
+          "msFull": 146,
+          "sizeFull": 1215742,
+          "size1200": 194267,
+          "dssim": 0.012863032502152816
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 40,
+          "support": "ok",
+          "msFull": 197,
+          "sizeFull": 2489129,
+          "size1200": 420110,
+          "dssim": 0.004018181363724782
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 60,
+          "support": "ok",
+          "msFull": 234,
+          "sizeFull": 4362598,
+          "size1200": 689682,
+          "dssim": 0.0013723806855219234
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 80,
+          "support": "ok",
+          "msFull": 247,
+          "sizeFull": 6352999,
+          "size1200": 971288,
+          "dssim": 0.0006341829796567833
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 92,
+          "support": "ok",
+          "msFull": 264,
+          "sizeFull": 7753674,
+          "size1200": 1170304,
+          "dssim": 0.0004976239322880271
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 100,
+          "support": "ok",
+          "msFull": 440,
+          "sizeFull": 18547918,
+          "size1200": 2974002,
+          "dssim": 0.00003442403883435752
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 10,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 40,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 60,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 80,
+          "support": "silent",
+          "sizeFull": 26357617,
+          "actualType": "image/png"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 92,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 100,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 10,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 40,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 60,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 80,
+          "support": "silent",
+          "sizeFull": 26357617,
+          "actualType": "image/png"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 92,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 100,
+          "support": "silent"
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 10,
+          "support": "ok",
+          "size1200": 54321,
+          "dssim": 0.04700159167161666,
+          "msFull": 1851,
+          "sizeFull": 424019
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 40,
+          "support": "ok",
+          "size1200": 216246,
+          "dssim": 0.008975085915287506,
+          "msFull": 2520,
+          "sizeFull": 1339835
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 60,
+          "support": "ok",
+          "size1200": 302470,
+          "dssim": 0.005431498948409441,
+          "msFull": 3294,
+          "sizeFull": 1820202
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 80,
+          "support": "ok",
+          "size1200": 522632,
+          "dssim": 0.0022142530044122477,
+          "msFull": 4878,
+          "sizeFull": 3081152
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 92,
+          "support": "ok",
+          "size1200": 993560,
+          "dssim": 0.0006493173553550058,
+          "msFull": 8276,
+          "sizeFull": 5809872
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 100,
+          "support": "ok",
+          "size1200": 2375663,
+          "dssim": 0.000028915933644624303,
+          "msFull": 21742,
+          "sizeFull": 15169746
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 10,
+          "support": "ok",
+          "size1200": 201948,
+          "dssim": 0.01319710091502202,
+          "msFull": 3906,
+          "sizeFull": 921284
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 40,
+          "support": "ok",
+          "size1200": 369332,
+          "dssim": 0.004284691852568967,
+          "msFull": 4581,
+          "sizeFull": 1904812
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 60,
+          "support": "ok",
+          "size1200": 449400,
+          "dssim": 0.0026428894556880245,
+          "msFull": 4957,
+          "sizeFull": 2434778
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 80,
+          "support": "ok",
+          "size1200": 590152,
+          "dssim": 0.001333759792881306,
+          "msFull": 5404,
+          "sizeFull": 3410960
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 92,
+          "support": "ok",
+          "size1200": 854782,
+          "dssim": 0.0006139100192557034,
+          "msFull": 5905,
+          "sizeFull": 5303770
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 100,
+          "support": "ok",
+          "size1200": 1167728,
+          "dssim": 0.0004624081603719077,
+          "msFull": 6317,
+          "sizeFull": 7904682
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 10,
+          "support": "ok",
+          "size1200": 58185,
+          "dssim": 0.07011186702350769,
+          "msFull": 22984,
+          "sizeFull": 314893
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 40,
+          "support": "ok",
+          "size1200": 311910,
+          "dssim": 0.005624590712000721,
+          "msFull": 33407,
+          "sizeFull": 1517604
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 60,
+          "support": "ok",
+          "size1200": 548167,
+          "dssim": 0.0014683637357815194,
+          "msFull": 39456,
+          "sizeFull": 3180396
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 80,
+          "support": "ok",
+          "size1200": 755962,
+          "dssim": 0.0006415013537890424,
+          "msFull": 32475,
+          "sizeFull": 4647883
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 92,
+          "support": "ok",
+          "size1200": 1051065,
+          "dssim": 0.0003673052637074292,
+          "msFull": 36444,
+          "sizeFull": 6637342
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 100,
+          "support": "ok",
+          "size1200": 1693039,
+          "dssim": 0.00030099582403519953,
+          "msFull": 20227,
+          "sizeFull": 11347113
+        }
+      ]
+    },
+    {
+      "file": "grass1.png",
+      "source": "https://cdn.pixkeep.app/bench-encode/grass1.png",
+      "width": 3024,
+      "height": 4032,
+      "entries": [
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 10,
+          "support": "ok",
+          "msFull": 154,
+          "sizeFull": 1478912,
+          "size1200": 203838,
+          "dssim": 0.015625812354627122
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 40,
+          "support": "ok",
+          "msFull": 242,
+          "sizeFull": 3056902,
+          "size1200": 446639,
+          "dssim": 0.003927351473502094
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 60,
+          "support": "ok",
+          "msFull": 299,
+          "sizeFull": 5270574,
+          "size1200": 716333,
+          "dssim": 0.0009811559988728291
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 80,
+          "support": "ok",
+          "msFull": 276,
+          "sizeFull": 7473940,
+          "size1200": 986692,
+          "dssim": 0.00032721916388633865
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 92,
+          "support": "ok",
+          "msFull": 287,
+          "sizeFull": 9035650,
+          "size1200": 1184909,
+          "dssim": 0.0002037884181771421
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 100,
+          "support": "ok",
+          "msFull": 532,
+          "sizeFull": 21941295,
+          "size1200": 3009919,
+          "dssim": 0.00003722463570610124
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 10,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 40,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 60,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 80,
+          "support": "silent",
+          "sizeFull": 29125327,
+          "actualType": "image/png"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 92,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 100,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 10,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 40,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 60,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 80,
+          "support": "silent",
+          "sizeFull": 29125327,
+          "actualType": "image/png"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 92,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 100,
+          "support": "silent"
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 10,
+          "support": "ok",
+          "size1200": 47340,
+          "dssim": 0.06145535232363897,
+          "msFull": 2125,
+          "sizeFull": 507231
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 40,
+          "support": "ok",
+          "size1200": 215764,
+          "dssim": 0.011440817049364727,
+          "msFull": 3267,
+          "sizeFull": 1596884
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 60,
+          "support": "ok",
+          "size1200": 307222,
+          "dssim": 0.006670011209263027,
+          "msFull": 4085,
+          "sizeFull": 2163533
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 80,
+          "support": "ok",
+          "size1200": 517602,
+          "dssim": 0.00264660721679566,
+          "msFull": 5797,
+          "sizeFull": 3594702
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 92,
+          "support": "ok",
+          "size1200": 968032,
+          "dssim": 0.0007247547197233306,
+          "msFull": 10366,
+          "sizeFull": 6671433
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 100,
+          "support": "ok",
+          "size1200": 2369829,
+          "dssim": 0.00003026689869867205,
+          "msFull": 24658,
+          "sizeFull": 17516320
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 10,
+          "support": "ok",
+          "size1200": 235128,
+          "dssim": 0.0157563773595506,
+          "msFull": 4430,
+          "sizeFull": 1355168
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 40,
+          "support": "ok",
+          "size1200": 419432,
+          "dssim": 0.004494163483887537,
+          "msFull": 5180,
+          "sizeFull": 2674856
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 60,
+          "support": "ok",
+          "size1200": 495314,
+          "dssim": 0.0026446687862868856,
+          "msFull": 5482,
+          "sizeFull": 3289716
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 80,
+          "support": "ok",
+          "size1200": 629340,
+          "dssim": 0.0012185375107325314,
+          "msFull": 5893,
+          "sizeFull": 4371174
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 92,
+          "support": "ok",
+          "size1200": 895478,
+          "dssim": 0.0003521351149178287,
+          "msFull": 6196,
+          "sizeFull": 6487108
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 100,
+          "support": "ok",
+          "size1200": 1224696,
+          "dssim": 0.0001541047529469708,
+          "msFull": 6644,
+          "sizeFull": 9182954
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 10,
+          "support": "ok",
+          "size1200": 55645,
+          "dssim": 0.0680324021306038,
+          "msFull": 23520,
+          "sizeFull": 409007
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 40,
+          "support": "ok",
+          "size1200": 345176,
+          "dssim": 0.0067391682463993074,
+          "msFull": 33303,
+          "sizeFull": 2069052
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 60,
+          "support": "ok",
+          "size1200": 583759,
+          "dssim": 0.0014848847492838768,
+          "msFull": 38122,
+          "sizeFull": 4051433
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 80,
+          "support": "ok",
+          "size1200": 782981,
+          "dssim": 0.0005189150746351956,
+          "msFull": 33767,
+          "sizeFull": 5692802
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 92,
+          "support": "ok",
+          "size1200": 1079411,
+          "dssim": 0.0001836183262893254,
+          "msFull": 38072,
+          "sizeFull": 7981877
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 100,
+          "support": "ok",
+          "size1200": 1751792,
+          "dssim": 0.00007246082469980486,
+          "msFull": 19479,
+          "sizeFull": 13193229
+        }
+      ]
+    },
+    {
+      "file": "graphic-text.png",
+      "source": "https://cdn.pixkeep.app/bench-encode/graphic-text.png",
+      "width": 2400,
+      "height": 1600,
+      "entries": [
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 10,
+          "support": "ok",
+          "msFull": 44,
+          "sizeFull": 98062,
+          "size1200": 42913,
+          "dssim": 0.0019444282810547886
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 40,
+          "support": "ok",
+          "msFull": 45,
+          "sizeFull": 130232,
+          "size1200": 60657,
+          "dssim": 0.0005332168396543491
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 60,
+          "support": "ok",
+          "msFull": 44,
+          "sizeFull": 164939,
+          "size1200": 80323,
+          "dssim": 0.00022194533203756528
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 80,
+          "support": "ok",
+          "msFull": 44,
+          "sizeFull": 203443,
+          "size1200": 101144,
+          "dssim": 0.00012183031036472336
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 92,
+          "support": "ok",
+          "msFull": 46,
+          "sizeFull": 231653,
+          "size1200": 116916,
+          "dssim": 0.00010062675356303785
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 100,
+          "support": "ok",
+          "msFull": 56,
+          "sizeFull": 455673,
+          "size1200": 228095,
+          "dssim": 0.000015137317872726541
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 10,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 40,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 60,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 80,
+          "support": "silent",
+          "sizeFull": 181772,
+          "actualType": "image/png"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 92,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 100,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 10,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 40,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 60,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 80,
+          "support": "silent",
+          "sizeFull": 181772,
+          "actualType": "image/png"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 92,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 100,
+          "support": "silent"
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 10,
+          "support": "ok",
+          "size1200": 12947,
+          "dssim": 0.004439462985018849,
+          "msFull": 756,
+          "sizeFull": 27034
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 40,
+          "support": "ok",
+          "size1200": 26136,
+          "dssim": 0.001420536670421635,
+          "msFull": 740,
+          "sizeFull": 51119
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 60,
+          "support": "ok",
+          "size1200": 31965,
+          "dssim": 0.0008447543902725396,
+          "msFull": 809,
+          "sizeFull": 61608
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 80,
+          "support": "ok",
+          "size1200": 48794,
+          "dssim": 0.0003373228512859594,
+          "msFull": 923,
+          "sizeFull": 95220
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 92,
+          "support": "ok",
+          "size1200": 80010,
+          "dssim": 0.00011253804104538467,
+          "msFull": 1182,
+          "sizeFull": 155844
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 100,
+          "support": "ok",
+          "size1200": 161194,
+          "dssim": 0.00001384599564735467,
+          "msFull": 1428,
+          "sizeFull": 309656
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 10,
+          "support": "ok",
+          "size1200": 13424,
+          "dssim": 0.0017160707888863591,
+          "msFull": 894,
+          "sizeFull": 28626
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 40,
+          "support": "ok",
+          "size1200": 17988,
+          "dssim": 0.0005394782488992167,
+          "msFull": 688,
+          "sizeFull": 36446
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 60,
+          "support": "ok",
+          "size1200": 20878,
+          "dssim": 0.0003210011766809906,
+          "msFull": 669,
+          "sizeFull": 41542
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 80,
+          "support": "ok",
+          "size1200": 26058,
+          "dssim": 0.0002094334555085009,
+          "msFull": 677,
+          "sizeFull": 50568
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 92,
+          "support": "ok",
+          "size1200": 37892,
+          "dssim": 0.00013378295857902067,
+          "msFull": 712,
+          "sizeFull": 70804
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 100,
+          "support": "ok",
+          "size1200": 54896,
+          "dssim": 0.00010163708442223474,
+          "msFull": 737,
+          "sizeFull": 99202
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 10,
+          "support": "ok",
+          "size1200": 3847,
+          "dssim": 0.003057540209523868,
+          "msFull": 2051,
+          "sizeFull": 6283
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 40,
+          "support": "ok",
+          "size1200": 9769,
+          "dssim": 0.000790159689977532,
+          "msFull": 1943,
+          "sizeFull": 16572
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 60,
+          "support": "ok",
+          "size1200": 16664,
+          "dssim": 0.0001729914541002131,
+          "msFull": 1907,
+          "sizeFull": 28121
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 80,
+          "support": "ok",
+          "size1200": 23041,
+          "dssim": 0.00009930272577340915,
+          "msFull": 1658,
+          "sizeFull": 39050
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 92,
+          "support": "ok",
+          "size1200": 32350,
+          "dssim": 0.0000643466771532708,
+          "msFull": 1771,
+          "sizeFull": 54062
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 100,
+          "support": "ok",
+          "size1200": 67175,
+          "dssim": 0.00005315366480873607,
+          "msFull": 3006,
+          "sizeFull": 116021
+        }
+      ]
+    },
+    {
+      "file": "alpha-transparent.png",
+      "source": "https://cdn.pixkeep.app/bench-encode/alpha-transparent.png",
+      "width": 2000,
+      "height": 2000,
+      "entries": [
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 10,
+          "support": "ok",
+          "msFull": 47,
+          "sizeFull": 72976,
+          "size1200": 28757,
+          "dssim": 1.0911463341250598
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 40,
+          "support": "ok",
+          "msFull": 45,
+          "sizeFull": 84632,
+          "size1200": 35269,
+          "dssim": 1.0927447154867886
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 60,
+          "support": "ok",
+          "msFull": 46,
+          "sizeFull": 99310,
+          "size1200": 43858,
+          "dssim": 1.0935109732941628
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 80,
+          "support": "ok",
+          "msFull": 48,
+          "sizeFull": 115531,
+          "size1200": 53777,
+          "dssim": 1.0936814201640952
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 92,
+          "support": "ok",
+          "msFull": 652,
+          "sizeFull": 127746,
+          "size1200": 61081,
+          "dssim": 1.093680194109087
+        },
+        {
+          "group": "native",
+          "format": "jpeg",
+          "q": 100,
+          "support": "ok",
+          "msFull": 53,
+          "sizeFull": 270020,
+          "size1200": 133893,
+          "dssim": 1.0938963834717534
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 10,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 40,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 60,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 80,
+          "support": "silent",
+          "sizeFull": 148327,
+          "actualType": "image/png"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 92,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "webp",
+          "q": 100,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 10,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 40,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 60,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 80,
+          "support": "silent",
+          "sizeFull": 148327,
+          "actualType": "image/png"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 92,
+          "support": "silent"
+        },
+        {
+          "group": "native",
+          "format": "avif",
+          "q": 100,
+          "support": "silent"
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 10,
+          "support": "ok",
+          "size1200": 9040,
+          "dssim": 0.990251756002605,
+          "msFull": 768,
+          "sizeFull": 19850
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 40,
+          "support": "ok",
+          "size1200": 16014,
+          "dssim": 0.993838518965406,
+          "msFull": 777,
+          "sizeFull": 31992
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 60,
+          "support": "ok",
+          "size1200": 19186,
+          "dssim": 0.9940487087091459,
+          "msFull": 817,
+          "sizeFull": 37762
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 80,
+          "support": "ok",
+          "size1200": 30656,
+          "dssim": 0.9943293356972398,
+          "msFull": 931,
+          "sizeFull": 59773
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 92,
+          "support": "ok",
+          "size1200": 51358,
+          "dssim": 0.9944229015090664,
+          "msFull": 1265,
+          "sizeFull": 98826
+        },
+        {
+          "group": "wasm",
+          "format": "jpeg",
+          "q": 100,
+          "support": "ok",
+          "size1200": 99816,
+          "dssim": 0.9944599803243777,
+          "msFull": 1598,
+          "sizeFull": 179464
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 10,
+          "support": "ok",
+          "size1200": 19046,
+          "dssim": 0.0006168089247242659,
+          "msFull": 1181,
+          "sizeFull": 34748
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 40,
+          "support": "ok",
+          "size1200": 20254,
+          "dssim": 0.00019785985679798834,
+          "msFull": 1029,
+          "sizeFull": 36100
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 60,
+          "support": "ok",
+          "size1200": 21214,
+          "dssim": 0.00013528547757402087,
+          "msFull": 1035,
+          "sizeFull": 37474
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 80,
+          "support": "ok",
+          "size1200": 23120,
+          "dssim": 0.00007325686585257785,
+          "msFull": 1032,
+          "sizeFull": 40790
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 92,
+          "support": "ok",
+          "size1200": 28248,
+          "dssim": 0.00003584651240595704,
+          "msFull": 1060,
+          "sizeFull": 49550
+        },
+        {
+          "group": "wasm",
+          "format": "webp",
+          "q": 100,
+          "support": "ok",
+          "size1200": 34430,
+          "dssim": 0.00003227461139609922,
+          "msFull": 952,
+          "sizeFull": 58184
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 10,
+          "support": "ok",
+          "size1200": 3627,
+          "dssim": 0.0011954535502480823,
+          "msFull": 4080,
+          "sizeFull": 5370
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 40,
+          "support": "ok",
+          "size1200": 7775,
+          "dssim": 0.00021371427272764976,
+          "msFull": 3266,
+          "sizeFull": 11228
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 60,
+          "support": "ok",
+          "size1200": 12780,
+          "dssim": 0.00006301279852571895,
+          "msFull": 2941,
+          "sizeFull": 18863
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 80,
+          "support": "ok",
+          "size1200": 17986,
+          "dssim": 0.00003996534353212233,
+          "msFull": 2672,
+          "sizeFull": 26792
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 92,
+          "support": "ok",
+          "size1200": 25569,
+          "dssim": 0.000027193575732109565,
+          "msFull": 2639,
+          "sizeFull": 39003
+        },
+        {
+          "group": "wasm",
+          "format": "avif",
+          "q": 100,
+          "support": "ok",
+          "size1200": 50546,
+          "dssim": 0.00002278867173610699,
+          "msFull": 5753,
+          "sizeFull": 79323
+        }
+      ]
+    }
+  ]
+}
