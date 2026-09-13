@@ -6,13 +6,13 @@
 // were dropped; the encoder implementations are byte-equivalent.
 //
 // Why WASM control groups exist next to native canvas.toBlob:
-// - WebKit's canvas.toBlob('image/webp') IGNORES the quality parameter and
-//   encodes (near-)losslessly — a 12MP photo at slider "80%" came out at
-//   20.55 MB vs 3.97 MB source (measured 2026-08-15).
-// - WebKit's canvas.toBlob('image/jpeg') is measurably less efficient than
-//   Chromium/Firefox encoders.
+// - WebKit has no WebP encoder: canvas.toBlob('image/webp') silently falls
+//   back to PNG (spec behaviour), so a 12MP photo at slider "80%" came out at
+//   20.55 MB vs 3.97 MB source (2026-08-15; real Safari re-measured
+//   2026-09-13: 25.1 MB PNG). Safari's JPEG *does* honor quality, but spends
+//   ~1.7× Chromium's bytes at the same nominal value.
 // - No browser currently honours canvas.toBlob('image/avif') on the main
-//   thread (2026-08: Chrome/Firefox/Edge silently return PNG).
+//   thread (2026-09: Chrome/Edge/Firefox/Safari all silently return PNG).
 //
 // Worker shape: classic workers with static imports only — Vite bundles each
 // worker graph into one IIFE file at build time, so the wasm asset URL is

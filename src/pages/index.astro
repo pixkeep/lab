@@ -22,7 +22,8 @@ import Base from '../layouts/Base.astro';
       quality scores, on your photos or a set of shared reference images.
     </p>
     <p>
-      Known catches so far: Safari ignores the WebP quality parameter entirely;
+      Known catches so far: Safari has no WebP encoder at all (asking
+      <code>toBlob('image/webp')</code> silently hands you a PNG);
       no stable browser honours <code>toBlob('image/avif')</code> on the main thread
       (they silently hand you a PNG). Run it on yours:
     </p>
