@@ -64,6 +64,11 @@ and our product decisions cite.
 # regenerate the aggregate tables (support matrix, size/time, quality curves, …)
 node scripts/aggregate-encode-bench.mjs                    # defaults to public/bench-data
 node scripts/aggregate-encode-bench.mjs --dir tmp --focus grass1
+
+# equal-size / equal-DSSIM comparison (quality scales are not portable,
+# so this is the only fair cross-encoder comparison — it backs the matched-size
+# table in the benchmark article)
+node scripts/analyze-equal-size.mjs
 ```
 
 The data is licensed CC BY 4.0 (the code is MIT) — see `public/bench-data/README.md`.

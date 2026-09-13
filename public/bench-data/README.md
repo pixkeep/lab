@@ -105,6 +105,11 @@ node scripts/aggregate-encode-bench.mjs
 
 # any other directory of run files
 node scripts/aggregate-encode-bench.mjs --dir tmp --focus grass1
+
+# equal-size / equal-DSSIM comparison — quality scales are not portable across
+# encoders, so this is the fair way to compare them (interpolates between
+# adjacent quality levels; backs the matched-size table in the article)
+node scripts/analyze-equal-size.mjs
 ```
 
 It writes `report.md` next to the data (support matrix, per-image size/time tables, quality
