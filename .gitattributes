@@ -1,0 +1,5 @@
+# public/bench-data holds unmodified browser exports ("Download JSON" files) —
+# never rewrite their line endings on checkout. Matters on clones with
+# core.autocrlf=true (e.g. this one), which would otherwise turn every JSON
+# into a CRLF copy and break the byte-for-byte claim in README.md.
+public/bench-data/** -text
