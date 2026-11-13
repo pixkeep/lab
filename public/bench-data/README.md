@@ -26,10 +26,12 @@ All are **single runs** — see "Run protocol" below.
 
 ```jsonc
 {
-  "benchVersion": 1,
+  "benchVersion": 2,                 // v1 (2026-09-13 set) lacks device.machine and run
   "generatedAt": "2026-09-13T14:21:01.122Z",
   "device": { "browser", "browserVersion", "engine", "os", "arch", "cores",
-              "memoryGB", "gpu", "screen", "mobile", "userAgent" },
+              "memoryGB", "gpu", "screen", "mobile", "userAgent",
+              "machine" },           // v2: manual label — browsers can't see the machine model; null if not filled
+  "run": { "thermal", "repeat" },    // v2: manual labels — cool/warm/hot; r1/r2/r3 (null when not filled)
   "results": [                       // one entry per image
     { "file", "source", "width", "height", "error"?,
       "entries": [                   // one per group × format × quality
@@ -91,11 +93,13 @@ For a run to be worth publishing here, follow the same conditions we did:
    (auto-sleep freezes the page while wall-clock time keeps running).
 3. **One browser session per file**, all four reference images, all formats, all six quality levels.
 4. **Record the browser version** (the file does this) and the **real OS version / machine model**
-   (the file cannot do this reliably — annotate it when you add the file).
+   — since harness v2 the **Machine field** records the model/hostname in the JSON itself
+   (earlier files were annotated by hand in the table above).
 5. Export with the page's **Download JSON** button; do not edit the file.
 6. Repeats: the plan is **3 repeats per environment** (to quantify the within-machine noise of
    `msFull`). The 2026-09-13 set is single-run; if you add repeats, keep them as separate files
-   (suffix `-r1`, `-r2`, `-r3`) so raw evidence stays intact.
+   (suffix `-r1`, `-r2`, `-r3`) so raw evidence stays intact — the harness **Repeat field**
+   (v2) records the same label inside the JSON.
 
 ## Aggregate
 

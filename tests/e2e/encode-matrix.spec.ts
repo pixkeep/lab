@@ -5,6 +5,9 @@
 //   npx playwright test --project=chromium       # one engine
 //   BENCH_LIVE=1 npx playwright test --project=webkit   # against lab.pixkeep.app
 //   BENCH_SAMPLES=graphic-text …                 # subset for a smoke run
+//   BENCH_MACHINE=e471g BENCH_THERMAL=cool BENCH_REPEAT=r1 …  # run labels → URL
+//                                                params → JSON (device.machine /
+//                                                run.thermal / run.repeat)
 //   BENCH_BASE=http://localhost:4333 …           # custom server — use when 4322 is
 //                                                occupied by a dev server (Playwright
 //                                                reuses it and results are invalid)
@@ -15,10 +18,19 @@ const samples = process.env.BENCH_SAMPLES || 'all';
 const base =
   process.env.BENCH_BASE ||
   (process.env.BENCH_LIVE ? 'https://lab.pixkeep.app' : 'http://localhost:4322');
+const labelParams = [
+  process.env.BENCH_MACHINE && `machine=${encodeURIComponent(process.env.BENCH_MACHINE)}`,
+  process.env.BENCH_THERMAL && `thermal=${encodeURIComponent(process.env.BENCH_THERMAL)}`,
+  process.env.BENCH_REPEAT && `repeat=${encodeURIComponent(process.env.BENCH_REPEAT)}`,
+]
+  .filter(Boolean)
+  .join('&');
 
 test('encode matrix: native toBlob vs WASM across formats/quality levels', async ({ page }, testInfo) => {
   test.setTimeout(3_000_000); // 50 min — WebKit full-res photos are slow
-  await page.goto(`${base}/encode-matrix/?samples=${encodeURIComponent(samples)}&autorun=1`);
+  await page.goto(
+    `${base}/encode-matrix/?samples=${encodeURIComponent(samples)}&autorun=1${labelParams ? `&${labelParams}` : ''}`,
+  );
   await page.waitForFunction(() => (window as any).__benchEncodeResult, null, { timeout: 3_000_000 });
 
   const result = await page.evaluate(() => (window as any).__benchEncodeResult);

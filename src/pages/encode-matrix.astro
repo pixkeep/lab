@@ -34,6 +34,17 @@ import Base from '../layouts/Base.astro';
       Read locally; only shared if you choose to share.
     </p>
     <dl id="env-list" class="env-grid"><dt>Status</dt><dd>collecting…</dd></dl>
+    <div class="run-meta">
+      <label>Machine <input id="machine" type="text" placeholder="e.g. e471g, macbook-air" spellcheck="false" /></label>
+      <label>Thermal <select id="thermal">
+        <option value="">unspecified</option>
+        <option value="cool">cool</option>
+        <option value="warm">warm</option>
+        <option value="hot">hot</option>
+      </select></label>
+      <label>Repeat <input id="repeat" type="text" placeholder="r1 / r2 / r3" spellcheck="false" /></label>
+      <span class="muted">Optional labels recorded into the exported JSON — browsers can't detect them, fill honestly. Saved locally for your next run.</span>
+    </div>
   </div>
 
   <div class="card">
@@ -100,7 +111,7 @@ import Base from '../layouts/Base.astro';
       <li><strong>Quality scales are not comparable across encoders.</strong> "q80" in Chromium's JPEG encoder, MozJPEG and libwebp are three different points on three curves. Compare formats at matched DSSIM, not matched q.</li>
       <li><strong>Support is detected by the returned blob's type</strong> — browsers that can't encode a format silently return PNG instead of throwing.</li>
       <li><strong>WASM reference encoders:</strong> MozJPEG (<code>@wasm-codecs/mozjpeg</code>), libwebp (<code>@jsquash/webp</code>), AVIF (<code>@jsquash/avif</code>) — both groups encode the full image once per quality for size and time, plus the 1200px analysis frame for DSSIM. The first WASM encode per format absorbs worker startup and <code>.wasm</code> compilation (unmeasured), so timed runs never see a cold start; WASM time includes RGBA extraction and the worker round-trip.</li>
-      <li><strong>One measured run per cell.</strong> No medians, no warm-up repetitions — one shot, honestly labelled. Re-run the bench if you want a second sample; a few percent between runs is expected.</li>
+      <li><strong>One measured run per cell.</strong> No medians, no warm-up repetitions — one shot, honestly labelled. Re-run the bench if you want a second sample; a few percent between runs is expected. For a noise check, run the same setup 3× and label them <code>r1/r2/r3</code> in the Repeat field — the label lands in the exported JSON and keeps the runs apart in the aggregate report.</li>
       <li>Timings: full-resolution encode, warm module, DevTools closed.</li>
     </ul>
     <p class="muted">Found something odd? <a href="https://github.com/pixkeep/lab/discussions">Bring it to Discussions</a> — reproducible oddities become blog posts.</p>
@@ -113,6 +124,11 @@ import Base from '../layouts/Base.astro';
     .env-grid { display: grid; grid-template-columns: 160px 1fr; gap: 4px 16px; margin: 0; font-size: 0.92rem; }
     .env-grid dt { color: var(--ink-soft); }
     .env-grid dd { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.86rem; }
+    .run-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 12px; font-size: 0.92rem; }
+    .run-meta label { display: inline-flex; align-items: center; gap: 6px; margin: 0; }
+    .run-meta input, .run-meta select { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.86rem; padding: 3px 8px; border: 1px solid var(--line); border-radius: 6px; }
+    .run-meta input { width: 16em; }
+    .run-meta .muted { flex-basis: 100%; font-size: 0.8rem; }
     .pick { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     @media (max-width: 760px) { .pick { grid-template-columns: 1fr; } }
     .pick h3 { margin: 0 0 6px; font-size: 1rem; }
@@ -195,6 +211,38 @@ import Base from '../layouts/Base.astro';
     }
     renderEnv();
     enrichDeviceInfo(deviceInfo).then(renderEnv);
+
+    // ─── Run labels: machine / thermal / repeat ────────────────────────────
+    // Browsers can't detect the machine model or thermals — these are manual
+    // labels, recorded verbatim into the exported JSON (device.machine and
+    // run{thermal, repeat}). URL params win over localStorage so automation
+    // never inherits a stale label; manual edits persist for the next run
+    // in this browser.
+    const params = new URLSearchParams(location.search);
+    const machineInput = $('#machine') as HTMLInputElement;
+    const thermalSel = $('#thermal') as HTMLSelectElement;
+    const repeatInput = $('#repeat') as HTMLInputElement;
+    const LS_KEYS = {
+      machine: 'lab-encode-matrix.machine',
+      thermal: 'lab-encode-matrix.thermal',
+      repeat: 'lab-encode-matrix.repeat',
+    } as const;
+    const paramOrStored = (key: string, lsKey: string) => params.get(key)?.trim() || localStorage.getItem(lsKey) || '';
+    machineInput.value = paramOrStored('machine', LS_KEYS.machine);
+    repeatInput.value = paramOrStored('repeat', LS_KEYS.repeat);
+    const thermal = paramOrStored('thermal', LS_KEYS.thermal);
+    if (['cool', 'warm', 'hot'].includes(thermal)) thermalSel.value = thermal;
+    const saveLabels = () => {
+      localStorage.setItem(LS_KEYS.machine, machineInput.value.trim());
+      localStorage.setItem(LS_KEYS.thermal, thermalSel.value);
+      localStorage.setItem(LS_KEYS.repeat, repeatInput.value.trim());
+    };
+    for (const el of [machineInput, thermalSel, repeatInput]) el.addEventListener('change', saveLabels);
+    const runLabels = () => ({
+      machine: machineInput.value.trim() || null,
+      thermal: thermalSel.value || null,
+      repeat: repeatInput.value.trim() || null,
+    });
 
     // ─── Sample picker ─────────────────────────────────────────────────────
     const samplesEl = $('#samples');
@@ -397,7 +445,9 @@ import Base from '../layouts/Base.astro';
         const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `encode-matrix-${deviceInfo.browser.toLowerCase()}-${new Date().toISOString().slice(0, 10)}.json`;
+        const safe = (s: string) => s.replace(/[^\w.-]+/g, '-');
+        const suffix = [labels.machine, labels.repeat].filter(Boolean).map((s) => `-${safe(s)}`).join('');
+        a.download = `encode-matrix-${deviceInfo.browser.toLowerCase()}${suffix}-${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
         URL.revokeObjectURL(a.href);
       };
@@ -493,7 +543,14 @@ import Base from '../layouts/Base.astro';
           }
           renderPhoto(results[results.length - 1]);
         }
-        const result = { benchVersion: 1, generatedAt: new Date().toISOString(), device: deviceInfo, results };
+        const labels = runLabels();
+        const result = {
+          benchVersion: 2, // v2 (2026-11): adds device.machine + run{thermal, repeat} — manual labels
+          generatedAt: new Date().toISOString(),
+          device: { ...deviceInfo, machine: labels.machine },
+          run: { thermal: labels.thermal, repeat: labels.repeat },
+          results,
+        };
         (window as any).__benchEncodeResult = result;
         status(`done: ${results.length} image(s), ${results.filter((r) => r.error).length} failed`);
         progress(1);
@@ -510,8 +567,8 @@ import Base from '../layouts/Base.astro';
     // ─── Automation hooks (Playwright) ─────────────────────────────────────
     // ?samples=all|flower1,grass1&autorun=1 — fetch reference images and run without
     // any user interaction; result lands in window.__benchEncodeResult.
+    // machine=…&thermal=…&repeat=… seed the run labels (see Run labels block above).
     (window as any).__benchEncodeProgress = 'idle';
-    const params = new URLSearchParams(location.search);
     const sampleParam = params.get('samples');
     if (sampleParam) {
       const keys = sampleParam === 'all' ? SAMPLES.map((s) => s.key) : sampleParam.split(',').filter((k) => SAMPLES.some((s) => s.key === k));

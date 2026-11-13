@@ -1,6 +1,6 @@
 # Encode-matrix benchmark report
 
-Generated: 2026-09-13T15:00:10.087Z
+Generated: 2026-11-13T12:56:44.959Z
 
 Sources (4 environments):
 - `2026-09-13-windows-chrome-153.json` — 2026-09-13T14:06:41.162Z
@@ -10,12 +10,12 @@ Sources (4 environments):
 
 ## Environments
 
-| browser | engine | OS | cores | memory | GPU | screen | JSON schema |
-|---|---|---|---|---|---|---|---|
-| Chrome 153.0.0.0 | Blink | Windows 10.0.0 | 8 | ≈16 GB | ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11) | 1536x864 @1.25x | lab |
-| Edge 153.0.0.0 | Blink | Windows 10.0.0 | 8 | ≈16 GB | ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11) | 1536x864 @1.25x | lab |
-| Firefox 155.0 | Gecko | Windows | 8 | not exposed | ANGLE (Intel, Intel(R) HD Graphics 400 Direct3D11 vs_5_0 ps_5_0), or similar | 1536x864 @1.25x | lab |
-| Safari 18.6 | WebKit | macOS 10.15.7 | 8 | not exposed | Apple GPU | 1440x900 @2x | lab |
+| browser | engine | OS | machine | thermal | repeat | cores | memory | GPU | screen | JSON schema |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Chrome 153.0.0.0 | Blink | Windows 10.0.0 | — | — | — | 8 | ≈16 GB | ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11) | 1536x864 @1.25x | lab |
+| Edge 153.0.0.0 | Blink | Windows 10.0.0 | — | — | — | 8 | ≈16 GB | ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11) | 1536x864 @1.25x | lab |
+| Firefox 155.0 | Gecko | Windows | — | — | — | 8 | not exposed | ANGLE (Intel, Intel(R) HD Graphics 400 Direct3D11 vs_5_0 ps_5_0), or similar | 1536x864 @1.25x | lab |
+| Safari 18.6 | WebKit | macOS 10.15.7 | — | — | — | 8 | not exposed | Apple GPU | 1440x900 @2x | lab |
 
 ## Native toBlob support matrix (canvas.toBlob)
 

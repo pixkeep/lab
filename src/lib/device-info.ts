@@ -17,6 +17,7 @@ export interface DeviceInfo {
   screen: string;          // "3024x1964 @2x"
   mobile: boolean;
   userAgent: string;
+  machine?: string | null; // manual label (page input) — browsers can't see the machine model/hostname
 }
 
 function parseUa(ua: string): { browser: string; browserVersion: string; engine: DeviceInfo['engine']; os: string } {

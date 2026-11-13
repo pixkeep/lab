@@ -10,6 +10,8 @@
  *
  * Handles both JSON schemas:
  *   - lab (2026-09-05+): { benchVersion, generatedAt, device{...}, results }
+ *     benchVersion 2 (2026-11+) adds device.machine and run{thermal, repeat}
+ *     — manual run labels; both are normalized the same way (v1 → null)
  *   - legacy (2026-08-29, deleted private-repo harness): { meta{ua,cores}, results }
  * The legacy schema has no browser name (UA only), no per-quality silent rows
  * and measures WASM at the 1200px analysis size — not comparable with lab runs
@@ -60,6 +62,7 @@ function normalize(raw, file) {
       file, schema: 'lab', generatedAt: raw.generatedAt,
       browser: d.browser, version: d.browserVersion, engine: d.engine, os: d.os,
       cores: d.cores, gpu: d.gpu, screen: d.screen, memoryGB: d.memoryGB, ua: d.userAgent,
+      machine: d.machine || null, thermal: raw.run?.thermal || null, repeat: raw.run?.repeat || null,
       results: raw.results,
     };
   }
@@ -68,6 +71,7 @@ function normalize(raw, file) {
   return {
     file, schema: 'legacy', generatedAt: raw.meta?.ts, ...parsed,
     cores: raw.meta?.cores, gpu: null, screen: null, memoryGB: null, ua,
+    machine: null, thermal: null, repeat: null,
     results: raw.results,
   };
 }
@@ -81,12 +85,14 @@ if (files.length === 0) {
 const runs = files.map((f) => normalize(JSON.parse(readFileSync(join(dir, f), 'utf-8')), f));
 
 // Drop partial runs (fewer images than the fullest run) and keep only the
-// newest run per (browser, os) — older same-browser runs are superseded.
+// newest run per (browser, os, machine, repeat) — older same-env runs are
+// superseded. Repeat labels keep r1/r2/r3 noise-check runs apart instead of
+// collapsing into one.
 const maxImages = Math.max(...runs.map((r) => r.results.length));
 const byKey = new Map();
 for (const r of runs) {
   if (r.results.length !== maxImages) continue;
-  const key = `${r.browser} ${r.os}`;
+  const key = `${r.browser} ${r.os}` + (r.machine ? ` [${r.machine}]` : '') + (r.repeat ? ` {${r.repeat}}` : '');
   const prev = byKey.get(key);
   if (!prev || (r.generatedAt || '') > (prev.generatedAt || '')) byKey.set(key, r);
 }
@@ -115,10 +121,10 @@ p('');
 // ---- environments ----
 p('## Environments');
 p('');
-p('| browser | engine | OS | cores | memory | GPU | screen | JSON schema |');
-p('|---|---|---|---|---|---|---|---|');
+p('| browser | engine | OS | machine | thermal | repeat | cores | memory | GPU | screen | JSON schema |');
+p('|---|---|---|---|---|---|---|---|---|---|---|');
 for (const e of envs) {
-  p(`| ${e.browser} ${e.version} | ${e.engine} | ${e.os} | ${e.cores ?? '—'} | ${e.memoryGB ? `≈${e.memoryGB} GB` : 'not exposed'} | ${e.gpu ?? '—'} | ${e.screen ?? '—'} | ${e.schema} |`);
+  p(`| ${e.browser} ${e.version} | ${e.engine} | ${e.os} | ${e.machine ?? '—'} | ${e.thermal ?? '—'} | ${e.repeat ?? '—'} | ${e.cores ?? '—'} | ${e.memoryGB ? `≈${e.memoryGB} GB` : 'not exposed'} | ${e.gpu ?? '—'} | ${e.screen ?? '—'} | ${e.schema} |`);
 }
 p('');
 
