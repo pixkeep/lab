@@ -91,3 +91,30 @@ test('download button exports the result with run-label filename', async ({ page
   expect((await download).suggestedFilename()).toMatch(new RegExp(`^encode-matrix-${browser}-e471g-r1-\\d{4}-\\d{2}-\\d{2}\\.json$`));
   expect(errors).toEqual([]);
 });
+
+test('sample-fetch timeout reports an honest timed-out reason, not "user aborted"', async ({ page }) => {
+  // Regression (2026-11-14, e471g manual run): the flat 5-min
+  // AbortSignal.timeout fired on a degraded CDN route, and Chrome surfaces
+  // that abort as "The user aborted a request." — the user had not. The
+  // page must translate the signal's TimeoutError reason into an honest
+  // "timed out after N s" in both the retry line and the fatal message.
+  const errors: unknown[] = [];
+  page.on('pageerror', (e) => errors.push(e));
+  // Serve the sample slower than the 500 ms forced budget, every attempt.
+  await page.route('**/bench-encode/flower1.png*', async (route) => {
+    await new Promise((r) => setTimeout(r, 1200));
+    await route.fulfill({ body: 'not-a-real-png', contentType: 'image/png' });
+  });
+  await page.goto(`${base}/encode-matrix/?samples=flower1&autorun=1&fetchTimeoutMs=500`);
+  await page.waitForFunction(
+    () => document.querySelector('#status')?.textContent?.includes('timed out after'),
+    null,
+    { timeout: 30_000 },
+  );
+  await page.waitForFunction(
+    (t: string) => (document.querySelector('#status')?.textContent || '').startsWith(t),
+    'fatal: sample fetch failed: flower1 (timed out after',
+    { timeout: 30_000 },
+  );
+  expect(errors).toEqual([]);
+});

@@ -488,37 +488,85 @@ import Base from '../layouts/Base.astro';
         // Retry with backoff — CDN fetches occasionally die mid-handshake on
         // flaky networks (ERR_CONNECTION_CLOSED), and a 25 MB sample is worth
         // more than one attempt.
-        let resp: Response | null = null;
-        let lastErr: unknown;
-        // AbortSignal.timeout guards against a stalled connection: a TCP hang
-        // never rejects, so without it the retry loop above never runs and the
-        // page sits on "fetching…" forever. 5 min per attempt is generous for
-        // a 25 MB sample on a slow-but-working link.
+        let blob: Blob | null = null;
+        let lastReason = 'unknown error';
+        // Timeout guard against stalled connections: a TCP hang never
+        // rejects, so without it the page sits on "fetching…" forever.
+        // Budget is size-scaled — max(5 min, sample bytes at 40 KB/s): a
+        // degraded-but-working CDN route (2026-11-14, e471g: ~23 MB sample
+        // no longer fit in the old flat 5 min) still completes, a true hang
+        // still dies. ?fetchTimeoutMs=<ms> replaces the budget (tests only —
+        // values below the computed floor are honored so timeouts can be
+        // forced small).
+        const sizeScaledMs = Math.max(300_000, Math.round((s.bytes / 40_000) * 1000));
+        const overrideMs = +(params.get('fetchTimeoutMs') || 0);
+        const timeoutMs = overrideMs > 0 ? overrideMs : sizeScaledMs;
         // no-store: WebKit serves direct-navigation cache copies (missing
         // ACAO) to CORS fetches of the same URL — the CDN's Cache-Control:
         // no-cache (worker route on /bench-encode/*) is the root fix, this
         // bypasses any stale copy already on disk. 22 MB benchmark files
         // have no use for the browser cache anyway. ?retry=N on retries:
         // cache-busting double-insurance against CDN config drift.
-        const fetchOpts = () => ({
-          cache: 'no-store' as RequestCache,
-          ...(AbortSignal.timeout ? { signal: AbortSignal.timeout(300_000) } : {}),
-        });
-        for (let attempt = 0; attempt < 3 && !resp; attempt++) {
+        const fetchOpts = () => {
+          const signal = AbortSignal.timeout ? AbortSignal.timeout(timeoutMs) : undefined;
+          return { cache: 'no-store' as RequestCache, signal };
+        };
+        // Chrome reports an AbortSignal.timeout abort as "AbortError: The
+        // user aborted a request." — an accusation the user cannot act on.
+        // Say what actually happened instead (the signal's reason is a
+        // TimeoutError DOMException on the timeout path).
+        const reasonFor = (e: unknown, signal?: AbortSignal) => {
+          if (signal?.aborted) {
+            const r = (signal as AbortSignal & { reason?: DOMException }).reason;
+            if (r?.name === 'TimeoutError') return `timed out after ${Math.round(timeoutMs / 1000)} s (CDN too slow or stalled)`;
+            return 'aborted before completion';
+          }
+          return (e as Error)?.message || String(e);
+        };
+        for (let attempt = 0; attempt < 3 && !blob; attempt++) {
+          const opts = fetchOpts();
           try {
-            const r = await fetch(`${CDN}/${key}.png${attempt ? `?retry=${attempt + 1}` : ''}`, fetchOpts());
+            const r = await fetch(`${CDN}/${key}.png${attempt ? `?retry=${attempt + 1}` : ''}`, opts);
             if (!r.ok) throw new Error(`HTTP ${r.status}`);
-            resp = r;
+            blob = await readWithProgress(r, key);
           } catch (e) {
-            lastErr = e;
-            status(`fetching sample ${key} — attempt ${attempt + 1} failed (${(e as Error)?.message || e}), retrying…`);
+            lastReason = reasonFor(e, opts.signal);
+            status(`fetching sample ${key} — attempt ${attempt + 1} failed (${lastReason}), retrying…`);
             await new Promise((r2) => setTimeout(r2, 1000 * (attempt + 1)));
           }
         }
-        if (!resp) throw new Error(`sample fetch failed: ${key} (${(lastErr as Error)?.message || lastErr})`);
-        out.push({ name: `${key}.png`, source: `${CDN}/${key}.png`, blob: await resp.blob() });
+        if (!blob) throw new Error(`sample fetch failed: ${key} (${lastReason})`);
+        out.push({ name: `${key}.png`, source: `${CDN}/${key}.png`, blob });
       }
       return out;
+    }
+
+    // Consume the body with a live progress line (MB done / total, current
+    // speed). A multi-minute 25 MB fetch on a slow route otherwise looks
+    // exactly like a hang — the progress readout is what separates "slow"
+    // from "stalled" for whoever is watching the bench.
+    async function readWithProgress(r: Response, key: string): Promise<Blob> {
+      if (!r.body) return r.blob();
+      const total = +(r.headers.get('content-length') || 0);
+      const reader = r.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let got = 0;
+      const t0 = performance.now();
+      let lastPaint = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        got += value.length;
+        const now = performance.now();
+        if (now - lastPaint > 400) {
+          lastPaint = now;
+          const of = total ? ` / ${(total / 1048576).toFixed(1)} MB` : ' MB';
+          const rate = ((got / 1048576) / ((now - t0) / 1000)).toFixed(2);
+          status(`fetching sample ${key}: ${(got / 1048576).toFixed(1)}${of} — ${rate} MB/s`);
+        }
+      }
+      return new Blob(chunks);
     }
 
     let running = false;
