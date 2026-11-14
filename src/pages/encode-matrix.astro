@@ -446,7 +446,14 @@ import Base from '../layouts/Base.astro';
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         const safe = (s: string) => s.replace(/[^\w.-]+/g, '-');
-        const suffix = [labels.machine, labels.repeat].filter(Boolean).map((s) => `-${safe(s)}`).join('');
+        // Labels come from the exported result itself, not the inputs — the
+        // filename must describe the JSON being downloaded (which captured
+        // the labels at run time), even if the user edited the fields since.
+        const res = result as { device?: { machine?: string | null }; run?: { repeat?: string | null } };
+        const suffix = [res.device?.machine, res.run?.repeat]
+          .filter(Boolean)
+          .map((s) => `-${safe(s as string)}`)
+          .join('');
         a.download = `encode-matrix-${deviceInfo.browser.toLowerCase()}${suffix}-${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
         URL.revokeObjectURL(a.href);

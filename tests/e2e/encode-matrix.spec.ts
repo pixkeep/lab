@@ -65,3 +65,29 @@ test('partial format selection renders only the selected formats', async ({ page
   await expect(page.locator('#results .fmt-head h4')).toHaveText(['JPEG']);
   await expect(page.locator('#results .data tbody tr')).toHaveCount(6);
 });
+
+test('download button exports the result with run-label filename', async ({ page }, testInfo) => {
+  // Regression: the v2 filename suffix referenced `labels`, a variable that
+  // only exists inside run() — clicking Download threw a ReferenceError and
+  // the button silently did nothing (2026-11-14, e471g manual run hit it).
+  // astro build does not typecheck, so this click-path test is the guard.
+  const errors: unknown[] = [];
+  page.on('pageerror', (e) => errors.push(e));
+  await page.goto(`${base}/encode-matrix/?machine=e471g&repeat=r1`);
+  await page.setInputFiles('#files', 'tests/fixtures/tiny.png');
+  await page.click('#run');
+  await page.waitForFunction(
+    () => document.querySelector('#status')?.textContent?.startsWith('done'),
+    null,
+    { timeout: 120_000 },
+  );
+
+  // parseUa maps each Playwright project's UA to a browser name; the filename
+  // mirrors it (headless Chrome reports "…Chrome/…" → chrome).
+  const browser = { chromium: 'chrome', firefox: 'firefox', webkit: 'safari' }[testInfo.project.name];
+  const download = page.waitForEvent('download');
+  await page.click('#download');
+  // date suffix = UTC date at click time
+  expect((await download).suggestedFilename()).toMatch(new RegExp(`^encode-matrix-${browser}-e471g-r1-\\d{4}-\\d{2}-\\d{2}\\.json$`));
+  expect(errors).toEqual([]);
+});
