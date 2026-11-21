@@ -1,8 +1,9 @@
 # Encode-matrix benchmark report
 
-Generated: 2026-11-13T12:56:44.959Z
+Generated: 2026-11-21T11:13:48.655Z
 
-Sources (4 environments):
+Sources (5 environments):
+- `2026-11-21-linux-chrome-152-r3.json` — 2026-11-21T08:50:17.775Z
 - `2026-09-13-windows-chrome-153.json` — 2026-09-13T14:06:41.162Z
 - `2026-09-13-windows-edge-153.json` — 2026-09-13T13:53:27.283Z
 - `2026-09-13-windows-firefox-155.json` — 2026-09-13T14:21:01.122Z
@@ -12,6 +13,7 @@ Sources (4 environments):
 
 | browser | engine | OS | machine | thermal | repeat | cores | memory | GPU | screen | JSON schema |
 |---|---|---|---|---|---|---|---|---|---|---|
+| Chrome 152.0.0.0 | Blink | Linux | e471g | warm | r3 | 4 | ≈8 GB | — | 1920x1080 @1x | lab |
 | Chrome 153.0.0.0 | Blink | Windows 10.0.0 | — | — | — | 8 | ≈16 GB | ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11) | 1536x864 @1.25x | lab |
 | Edge 153.0.0.0 | Blink | Windows 10.0.0 | — | — | — | 8 | ≈16 GB | ANGLE (Intel, Intel(R) UHD Graphics 620 (0x00005917) Direct3D11 vs_5_0 ps_5_0, D3D11) | 1536x864 @1.25x | lab |
 | Firefox 155.0 | Gecko | Windows | — | — | — | 8 | not exposed | ANGLE (Intel, Intel(R) HD Graphics 400 Direct3D11 vs_5_0 ps_5_0), or similar | 1536x864 @1.25x | lab |
@@ -21,6 +23,7 @@ Sources (4 environments):
 
 | browser | JPEG | WebP | AVIF |
 |---|---|---|---|
+| Chrome 152.0.0.0 | ok | ok | silent→image/png (24/24) |
 | Chrome 153.0.0.0 | ok | ok | silent→image/png (24/24) |
 | Edge 153.0.0.0 | ok | ok | silent→image/png (24/24) |
 | Firefox 155.0 | ok | ok | silent→image/png (24/24) |
@@ -32,6 +35,9 @@ Sources (4 environments):
 
 | browser | format | cells | ok | failed | first failure |
 |---|---|---|---|---|---|
+| Chrome | jpeg | 24 | 24 | 0 | — |
+| Chrome | webp | 24 | 24 | 0 | — |
+| Chrome | avif | 24 | 24 | 0 | — |
 | Chrome | jpeg | 24 | 24 | 0 | — |
 | Chrome | webp | 24 | 24 | 0 | — |
 | Chrome | avif | 24 | 24 | 0 | — |
@@ -49,6 +55,9 @@ Sources (4 environments):
 
 | browser | format | native size | native time | native dssim | wasm size | wasm time | wasm dssim |
 |---|---|---|---|---|---|---|---|
+| Chrome 152.0.0.0 | jpeg | 0.05 MB | 38ms | 1.09372 | 0.06 MB | 1.1s | 0.99431 |
+| Chrome 152.0.0.0 | webp | 0.04 MB | 510ms | 0.00008 | 0.04 MB | 1.1s | 0.00008 |
+| Chrome 152.0.0.0 | avif | silent→image/png | — | — | 0.03 MB | 3.1s | 0.00005 |
 | Chrome 153.0.0.0 | jpeg | 0.05 MB | 47ms | 1.09374 | 0.06 MB | 761ms | 0.99431 |
 | Chrome 153.0.0.0 | webp | 0.04 MB | 405ms | 0.00008 | 0.04 MB | 792ms | 0.00007 |
 | Chrome 153.0.0.0 | avif | silent→image/png | — | — | 0.03 MB | 2.2s | 0.00005 |
@@ -66,6 +75,9 @@ Sources (4 environments):
 
 | browser | format | native size | native time | native dssim | wasm size | wasm time | wasm dssim |
 |---|---|---|---|---|---|---|---|
+| Chrome 152.0.0.0 | jpeg | 3.53 MB | 206ms | 0.00206 | 2.94 MB | 5.6s | 0.00222 |
+| Chrome 152.0.0.0 | webp | 3.25 MB | 2.3s | 0.00134 | 3.25 MB | 5.2s | 0.00133 |
+| Chrome 152.0.0.0 | avif | silent→image/png | — | — | 4.43 MB | 37.0s | 0.00072 |
 | Chrome 153.0.0.0 | jpeg | 3.53 MB | 209ms | 0.00205 | 2.94 MB | 4.4s | 0.00221 |
 | Chrome 153.0.0.0 | webp | 3.25 MB | 2.3s | 0.00134 | 3.25 MB | 4.0s | 0.00133 |
 | Chrome 153.0.0.0 | avif | silent→image/png | — | — | 4.43 MB | 26.9s | 0.00072 |
@@ -83,6 +95,9 @@ Sources (4 environments):
 
 | browser | format | native size | native time | native dssim | wasm size | wasm time | wasm dssim |
 |---|---|---|---|---|---|---|---|
+| Chrome 152.0.0.0 | jpeg | 0.12 MB | 38ms | 0.00029 | 0.09 MB | 1.1s | 0.00035 |
+| Chrome 152.0.0.0 | webp | 0.05 MB | 301ms | 0.00020 | 0.05 MB | 786ms | 0.00020 |
+| Chrome 152.0.0.0 | avif | silent→image/png | — | — | 0.04 MB | 2.0s | 0.00012 |
 | Chrome 153.0.0.0 | jpeg | 0.12 MB | 55ms | 0.00029 | 0.09 MB | 1.1s | 0.00034 |
 | Chrome 153.0.0.0 | webp | 0.05 MB | 242ms | 0.00021 | 0.05 MB | 589ms | 0.00021 |
 | Chrome 153.0.0.0 | avif | silent→image/png | — | — | 0.04 MB | 1.4s | 0.00013 |
@@ -100,6 +115,9 @@ Sources (4 environments):
 
 | browser | format | native size | native time | native dssim | wasm size | wasm time | wasm dssim |
 |---|---|---|---|---|---|---|---|
+| Chrome 152.0.0.0 | jpeg | 4.27 MB | 239ms | 0.00171 | 3.43 MB | 6.0s | 0.00265 |
+| Chrome 152.0.0.0 | webp | 4.17 MB | 2.6s | 0.00123 | 4.17 MB | 5.6s | 0.00121 |
+| Chrome 152.0.0.0 | avif | silent→image/png | — | — | 5.43 MB | 40.5s | 0.00052 |
 | Chrome 153.0.0.0 | jpeg | 4.27 MB | 220ms | 0.00170 | 3.43 MB | 5.3s | 0.00264 |
 | Chrome 153.0.0.0 | webp | 4.17 MB | 2.2s | 0.00123 | 4.17 MB | 4.5s | 0.00121 |
 | Chrome 153.0.0.0 | avif | silent→image/png | — | — | 5.43 MB | 28.6s | 0.00051 |
@@ -117,6 +135,9 @@ Sources (4 environments):
 
 | browser | format | q10 | q40 | q60 | q80 | q92 | q100 |
 |---|---|---|---|---|---|---|---|
+| Chrome 152.0.0.0 | jpeg | 0.67 | 1.74 | 2.32 | 3.53 | 5.56 | 15.66 |
+| Chrome 152.0.0.0 | webp | 0.88 | 1.81 | 2.32 | 3.25 | 5.05 | 16.13 |
+| Chrome 152.0.0.0 | avif | silent→? | silent→? | silent→? | silent→png | silent→? | silent→? |
 | Chrome 153.0.0.0 | jpeg | 0.67 | 1.74 | 2.32 | 3.53 | 5.56 | 15.60 |
 | Chrome 153.0.0.0 | webp | 0.89 | 1.83 | 2.33 | 3.25 | 5.05 | 16.10 |
 | Chrome 153.0.0.0 | avif | silent→? | silent→? | silent→? | silent→png | silent→? | silent→? |
@@ -134,6 +155,9 @@ Sources (4 environments):
 
 | browser | format | q10 | q40 | q60 | q80 | q92 | q100 |
 |---|---|---|---|---|---|---|---|
+| Chrome 152.0.0.0 | jpeg | 0.02877 | 0.00695 | 0.00441 | 0.00206 | 0.00077 | 0.00003 |
+| Chrome 152.0.0.0 | webp | 0.01330 | 0.00432 | 0.00267 | 0.00134 | 0.00062 | 0.00000 |
+| Chrome 152.0.0.0 | avif | silent→? | silent→? | silent→? | silent→png | silent→? | silent→? |
 | Chrome 153.0.0.0 | jpeg | 0.02871 | 0.00694 | 0.00440 | 0.00205 | 0.00076 | 0.00003 |
 | Chrome 153.0.0.0 | webp | 0.01328 | 0.00432 | 0.00267 | 0.00134 | 0.00062 | 0.00000 |
 | Chrome 153.0.0.0 | avif | silent→? | silent→? | silent→? | silent→png | silent→? | silent→? |
@@ -151,6 +175,30 @@ Sources (4 environments):
 
 | browser | image | q | native bytes | libwebp bytes | identical |
 |---|---|---|---|---|---|
+| Chrome 152.0.0.0 | alpha-transparent.png | 10 | 35064 | 34654 | ❌ |
+| Chrome 152.0.0.0 | alpha-transparent.png | 40 | 36312 | 35970 | ❌ |
+| Chrome 152.0.0.0 | alpha-transparent.png | 60 | 37828 | 37456 | ❌ |
+| Chrome 152.0.0.0 | alpha-transparent.png | 80 | 41234 | 40890 | ❌ |
+| Chrome 152.0.0.0 | alpha-transparent.png | 92 | 49878 | 49536 | ❌ |
+| Chrome 152.0.0.0 | alpha-transparent.png | 100 | 978312 | 58124 | ❌ |
+| Chrome 152.0.0.0 | flower1.png | 10 | 919604 | 921028 | ❌ |
+| Chrome 152.0.0.0 | flower1.png | 40 | 1902244 | 1905176 | ❌ |
+| Chrome 152.0.0.0 | flower1.png | 60 | 2432290 | 2435006 | ❌ |
+| Chrome 152.0.0.0 | flower1.png | 80 | 3408770 | 3411478 | ❌ |
+| Chrome 152.0.0.0 | flower1.png | 92 | 5298426 | 5303994 | ❌ |
+| Chrome 152.0.0.0 | flower1.png | 100 | 16915948 | 7904960 | ❌ |
+| Chrome 152.0.0.0 | graphic-text.png | 10 | 28892 | 28626 | ❌ |
+| Chrome 152.0.0.0 | graphic-text.png | 40 | 36916 | 36446 | ❌ |
+| Chrome 152.0.0.0 | graphic-text.png | 60 | 41986 | 41542 | ❌ |
+| Chrome 152.0.0.0 | graphic-text.png | 80 | 51034 | 50568 | ❌ |
+| Chrome 152.0.0.0 | graphic-text.png | 92 | 71274 | 70804 | ❌ |
+| Chrome 152.0.0.0 | graphic-text.png | 100 | 410178 | 99202 | ❌ |
+| Chrome 152.0.0.0 | grass1.png | 10 | 1352294 | 1356078 | ❌ |
+| Chrome 152.0.0.0 | grass1.png | 40 | 2672012 | 2675268 | ❌ |
+| Chrome 152.0.0.0 | grass1.png | 60 | 3286728 | 3289998 | ❌ |
+| Chrome 152.0.0.0 | grass1.png | 80 | 4368750 | 4371950 | ❌ |
+| Chrome 152.0.0.0 | grass1.png | 92 | 6485478 | 6487496 | ❌ |
+| Chrome 152.0.0.0 | grass1.png | 100 | 19010336 | 9181112 | ❌ |
 | Chrome 153.0.0.0 | alpha-transparent.png | 10 | 35064 | 34654 | ❌ |
 | Chrome 153.0.0.0 | alpha-transparent.png | 40 | 36312 | 35970 | ❌ |
 | Chrome 153.0.0.0 | alpha-transparent.png | 60 | 37828 | 37456 | ❌ |
@@ -228,6 +276,7 @@ Sources (4 environments):
 
 | browser | JPEG | WebP | WASM libwebp | WASM MozJPEG | WASM AVIF |
 |---|---|---|---|---|---|
+| Chrome 152.0.0.0 | 206ms | 2.3s | 5.2s | 5.6s | 37.0s |
 | Chrome 153.0.0.0 | 209ms | 2.3s | 4.0s | 4.4s | 26.9s |
 | Edge 153.0.0.0 | 205ms | 2.3s | 4.1s | 4.5s | 26.1s |
 | Firefox 155.0 | 82ms | 1.8s | 4.5s | 5.3s | 27.8s |

@@ -18,9 +18,13 @@ Naming: `YYYY-MM-DD-<platform>-<browser>-<version>.json`
 | `2026-09-13-windows-edge-153.json` | Edge 153 (Blink) | Windows | 8 | ≈16 GB | Intel UHD Graphics 620 (ANGLE/D3D11) | 1536×864 @1.25x |
 | `2026-09-13-windows-firefox-155.json` | Firefox 155 (Gecko) | Windows | 8 | not exposed | Intel HD Graphics 400, or similar (masked) | 1536×864 @1.25x |
 | `2026-09-13-macos-safari-18.6.json` | Safari 18.6 (WebKit) | macOS | 8 | not exposed | Apple GPU | 1440×900 @2x |
+| `2026-11-21-linux-chrome-152-r3.json` | Chrome 152 (Blink) | Linux | 4 | ≈8 GB | not exposed (`device.gpu` absent in the export) | 1920×1080 @1x |
 
-The four Windows runs came from one machine, back to back; the Safari run is a second machine.
-All are **single runs** — see "Run protocol" below.
+The four Windows runs came from one machine, back to back; the Safari run is a second machine
+(`device.machine` empty in v1); the Linux run is a third machine (`e471g`, first harness-v2 run —
+the machine/thermal/repeat labels are recorded inside the JSON itself). All are **single runs** —
+see "Run protocol" below. The Linux file is labeled `r3` and the 3-repeat plan for that environment
+is still pending (`r1`/`r2` not collected yet); `run.thermal` was `warm` for it.
 
 ### Fields inside each file
 
