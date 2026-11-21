@@ -23,6 +23,7 @@ test('bench-data index lists all exports and stays indexable', async ({ page }) 
     '2026-09-13-windows-edge-153.json',
     '2026-09-13-windows-firefox-155.json',
     '2026-09-13-macos-safari-18.6.json',
+    '2026-11-21-linux-chrome-152-r3.json',
   ]) {
     await expect(page.locator(`a[href="/bench-data/${f}"]`)).toHaveCount(1);
   }
