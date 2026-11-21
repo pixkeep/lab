@@ -1,0 +1,49 @@
+---
+import Base from '../../layouts/Base.astro';
+
+// Data files live in public/bench-data/ and are served as-is at /bench-data/*.
+// Keep this list in sync with the directory contents (one row per JSON export).
+const files = [
+  '2026-09-13-windows-chrome-153.json',
+  '2026-09-13-windows-edge-153.json',
+  '2026-09-13-windows-firefox-155.json',
+  '2026-09-13-macos-safari-18.6.json',
+];
+---
+<Base
+  title="Encode-matrix benchmark data — raw JSON exports"
+  description="Raw, unmodified JSON exports of the encode-matrix experiment: native canvas.toBlob (JPEG / WebP / AVIF) versus WASM reference encoders across Chrome, Edge, Firefox, and Safari. Every file is a byte-identical copy of what the page's Download JSON button produced."
+>
+  <h1>Benchmark data</h1>
+  <p class="muted">
+    Raw JSON dumps from the
+    <a href="/encode-matrix/">encode-matrix experiment</a> —
+    <strong>native <code>canvas.toBlob</code> encoding (JPEG / WebP / AVIF) versus WASM reference
+    encoders</strong> (MozJPEG, libwebp, <code>@jsquash/avif</code>) across browsers and quality
+    levels.
+  </p>
+  <p>
+    Every file below is an <strong>unmodified export</strong> of the page's "Download JSON" button
+    (hash-identical to what the browser produced). Nothing in this directory is hand-edited —
+    corrections and derived numbers live in generated files or in the article that cites them.
+  </p>
+
+  <div class="card">
+    <h2>Files</h2>
+    <p>Naming: <code>YYYY-MM-DD-&lt;platform&gt;-&lt;browser&gt;-&lt;version&gt;.json</code></p>
+    <ul>
+      {files.map((f) => <li><a href={`/bench-data/${f}`}><code>{f}</code></a></li>)}
+      <li><a href="/bench-data/report.md"><code>report.md</code></a> — generated cross-browser summary</li>
+      <li><a href="/bench-data/README.md"><code>README.md</code> — run protocol, machine specs, and field dictionary</a></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>How these numbers are used</h2>
+    <p>
+      The article <a href="/encode-matrix/">Native vs WASM image encoder benchmark</a> cites these
+      runs as its evidence base. Re-run the experiment on your own device to reproduce them —
+      the page exports the same format.
+    </p>
+  </div>
+</Base>
