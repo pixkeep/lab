@@ -1,6 +1,6 @@
 # PixKeep Lab
 
-Public, reproducible in-browser image-codec experiments — live at **https://lab.pixkeep.app**.
+Public, reproducible in-browser image experiments — codecs and neural networks — live at **https://lab.pixkeep.app**.
 
 Browsers all claim to support the same image APIs. Lab measures what they **actually do**, on your device, with your photos. Everything runs client-side; nothing is uploaded.
 
@@ -9,6 +9,7 @@ Browsers all claim to support the same image APIs. Lab measures what they **actu
 | Route | What it measures |
 |---|---|
 | [`/encode-matrix/`](https://lab.pixkeep.app/encode-matrix/) | `canvas.toBlob` JPEG/WebP/AVIF across 6 quality levels — native vs WASM reference encoders (MozJPEG / libwebp / @jsquash-avif): bytes, latency, DSSIM |
+| [`/background-removal/`](https://lab.pixkeep.app/background-removal/) | a neural network (MODNet portrait matting) running in the browser through ONNX Runtime Web — WASM vs WebGPU: download size, load time, inference latency, and the cut-out itself |
 
 ## Run it yourself
 
@@ -30,6 +31,39 @@ npm run dev        # http://localhost:4322 (4322, not the Astro default — stay
 > so the WASM reference encoders render empty. MozJPEG works. For real benchmark
 > runs use the production build (`npm run build && npm run preview`) or the
 > live site. This mirrors the main pixkeep.app repo's dev-mode limitations.
+>
+> `/background-removal/` cannot run under `npm run dev` at all: Vite's dev server
+> rewrites the address the runtime loads its loader script from and answers it with
+> an error, so a run stops with "no available backend found". Same remedy.
+
+## Background removal (neural network)
+
+Open https://lab.pixkeep.app/background-removal/ with a photo of a person. The page
+downloads a portrait-matting model and the ONNX Runtime Web binaries from this site —
+no third party — runs them in a worker and reports what it cost on your device.
+WASM is the default backend; WebGPU is opt-in.
+
+- **Model**: `public/models/modnet/` — MODNet, Apache-2.0, 8-bit quantized ONNX.
+  Provenance, hashes and the re-verification command: `third_party/modnet/NOTICE`.
+- **Runtime**: `public/ort/` — the `onnxruntime-web` build that
+  `@huggingface/transformers` pins. It ships gzipped because the WebGPU-capable
+  build is over Cloudflare's 25 MiB per-file limit; the worker inflates it. Regenerate
+  after bumping the library:
+
+  ```bash
+  node scripts/pack-ort-wasm.mjs
+  ```
+
+- **Same-origin by design.** The lab CSP allows scripts, workers and connections from
+  `self` only (plus `cdn.pixkeep.app`), so the worker switches off both of the library's
+  defaults — models from huggingface.co, runtime from jsDelivr — and
+  `astro.config.mjs` selects the runtime build that does not embed its loader script.
+- **Reproduce** (Playwright, all three browsers; the spec pins the pipeline, not the
+  matting quality — its only fixture is not a photo of a person):
+
+  ```bash
+  npx playwright test tests/e2e/background-removal.spec.ts
+  ```
 
 ## Reproduce our numbers (Playwright)
 
@@ -101,7 +135,11 @@ npm run build && npx wrangler deploy   # needs `npx wrangler login` once
 
 ## License
 
-MIT (c) PixKeep — for everything except the DSSIM kernel.
+MIT (c) PixKeep — for everything except the DSSIM kernel and the bundled
+neural-network weights.
+
+`public/models/modnet/` holds the MODNet weights under **Apache-2.0**, redistributed
+unmodified — see `third_party/modnet/` (LICENSE + NOTICE).
 
 `public/dssim_wasm.wasm` is the official dssim-core v3.4.0 compiled via
 [dssim-wasm](https://github.com/pixkeep/dssim-wasm), licensed **AGPL-3.0** —

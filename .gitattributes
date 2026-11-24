@@ -3,3 +3,10 @@
 # core.autocrlf=true (e.g. this one), which would otherwise turn every JSON
 # into a CRLF copy and break the byte-for-byte claim in README.md.
 public/bench-data/** -text
+
+# Binary artifacts of the /background-removal/ experiment — model weights and
+# the packed ONNX Runtime files. Same reason as above: their sha256 values are
+# published (third_party/modnet/NOTICE, public/ort/README.md), so the bytes must
+# survive checkout unchanged.
+public/models/** -text
+public/ort/** -text

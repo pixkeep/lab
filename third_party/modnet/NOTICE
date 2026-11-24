@@ -1,0 +1,33 @@
+modnet (ONNX, quantized)
+========================
+
+`public/models/modnet/` holds the portrait-matting network that
+`/background-removal/` runs in the visitor's browser. The files are
+redistributed UNMODIFIED.
+
+- Model: MODNet — "Trimap-Free Portrait Matting in Real Time",
+  https://github.com/ZHKKKe/MODNet
+- Files: the ONNX conversion published as https://huggingface.co/Xenova/modnet,
+  revision `fa2fa546052fba4c08921230a26cc69a333fca12`.
+- License: Apache License 2.0 (see LICENSE, the upstream file). The upstream
+  README states: "The code, models, and demos in this repository (excluding
+  GIF files under the folder `doc/gif`) are released under the Apache License
+  2.0 license."
+- Not checked: the license terms of the datasets MODNet was trained on.
+
+Shipped files (downloaded 2026-11-24):
+
+| File | Bytes | sha256 |
+|---|---|---|
+| `onnx/model_quantized.onnx` | 6,632,188 | `92e49898c3e05a6d7a944fc67a8cb87c4aad754ffb6ebd949528c7d1105fee3a` |
+| `config.json` | 83 | — |
+| `preprocessor_config.json` | 365 | — |
+| `quantize_config.json` | 718 | — |
+
+The weight file's sha256 equals the LFS sha256 the Hugging Face API reports for
+that file at that revision. To re-verify:
+
+```bash
+sha256sum public/models/modnet/onnx/model_quantized.onnx
+curl -sL "https://huggingface.co/api/models/Xenova/modnet/revision/fa2fa546052fba4c08921230a26cc69a333fca12?blobs=true"
+```

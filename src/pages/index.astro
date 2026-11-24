@@ -2,8 +2,8 @@
 import Base from '../layouts/Base.astro';
 ---
 <Base
-  title="PixKeep Lab — open in-browser image-codec experiments"
-  description="Public, reproducible benchmarks of what browsers actually do when they encode images: canvas.toBlob support, quality adherence, and WASM reference encoders. Run them on your own device, with your own photos."
+  title="PixKeep Lab — open in-browser image experiments"
+  description="Public, reproducible experiments with what browsers actually do: canvas.toBlob support, quality adherence, WASM reference encoders, and a neural network running in the browser. Run them on your own device, with your own photos."
   noindex
 >
   <h1>PixKeep Lab</h1>
@@ -12,6 +12,17 @@ import Base from '../layouts/Base.astro';
     <em>actually do</em> — on your device, with your photos, nothing uploaded.
     Every experiment is open source and reproducible.
   </p>
+
+  <div class="card">
+    <h2>🧠 In-browser background removal</h2>
+    <p>
+      Can a neural network cut a person out of a photo without a server? MODNet
+      portrait matting runs in your browser through ONNX Runtime Web — on WebGPU
+      where your device has it, on WASM everywhere else — and reports the
+      download size and the time it took on your machine.
+    </p>
+    <p><a class="btn" href="/background-removal/">Try the cut-out →</a></p>
+  </div>
 
   <div class="card">
     <h2>🧪 Native vs WASM image encoder benchmark</h2>

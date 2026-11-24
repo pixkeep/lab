@@ -1,0 +1,26 @@
+{
+  "ortVersion": "1.31.0-dev.20260914-8d85527a0",
+  "packedOn": "2026-11-23",
+  "flavors": {
+    "cpu": {
+      "mjs": "/ort/ort-wasm-simd-threaded.mjs",
+      "wasm": "/ort/ort-wasm-simd-threaded.wasm.gz",
+      "compressed": "gzip",
+      "rawBytes": 14264838,
+      "shippedBytes": 3695787,
+      "mjsBytes": 24381,
+      "rawSha256": "06ba057753da3847e4c24f02d91ab133455b0817c69a44993a9a53a2146df9e3",
+      "shippedSha256": "604892b9aa1ca0ec7402313fab58b0f7bb13de702aa38a0cca7f9060137d9f7c"
+    },
+    "webgpu": {
+      "mjs": "/ort/ort-wasm-simd-threaded.asyncify.mjs",
+      "wasm": "/ort/ort-wasm-simd-threaded.asyncify.wasm.gz",
+      "compressed": "gzip",
+      "rawBytes": 26861777,
+      "shippedBytes": 6625019,
+      "mjsBytes": 53057,
+      "rawSha256": "49871f5a4409519797e127440868a6d1923339d9185907f301a5b2a1d90af082",
+      "shippedSha256": "0c1df68a01f88cbca0b3534463db69beb31f977a94e10be6d81b84349bcdc1f4"
+    }
+  }
+}

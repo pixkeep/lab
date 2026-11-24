@@ -1,0 +1,444 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base
+  title="In-browser background removal — PixKeep Lab"
+  description="Can a browser remove a photo's background with a neural network, entirely on your device? MODNet portrait matting through ONNX Runtime Web, on WASM or on WebGPU, with download size and latency measured on your machine. Nothing is uploaded."
+  noindex
+>
+  <h1>In-browser background removal</h1>
+  {import.meta.env.DEV && (
+    <div class="card devwarn">
+      <strong>Dev mode.</strong> The experiment cannot run under
+      <code>npm run dev</code>: Vite's dev server rewrites the address the runtime
+      loads its loader script from and answers it with an error, so a run stops
+      with "no available backend found". The UI is real; the run is not. Real
+      runs: <code>npm run build &amp;&amp; npm run preview</code>, or the live site.
+    </div>
+  )}
+  <p class="muted">
+    Background removal is usually a server feature: you upload the photo, and a
+    GPU somewhere cuts it out. This experiment checks whether it has to be. A
+    portrait-matting network (<strong>MODNet</strong>) runs in <em>your</em>
+    browser through ONNX Runtime Web — on WASM by default, on WebGPU if you
+    want to measure that — and reports what it cost: download size and time,
+    measured on your machine. Bring a photo of a person; you get the cut-out and
+    the numbers. Nothing is uploaded; your photo never leaves this page.
+  </p>
+
+  <div class="card" id="env-card">
+    <h2>Your environment</h2>
+    <p class="muted" style="margin-top:0">
+      The numbers below are a property of <em>this exact setup</em> — browser,
+      version, OS, CPU/GPU all move them. Read locally; only shared if you copy
+      the summary.
+    </p>
+    <dl id="env-list" class="env-grid"><dt>Status</dt><dd>collecting…</dd></dl>
+  </div>
+
+  <div class="card">
+    <h2>1 · Choose a photo</h2>
+    <div class="drop" id="drop">
+      <input type="file" id="file" accept="image/*" />
+      <p class="muted" style="margin:10px 0 0">
+        …or drop it here. MODNet is a <em>portrait</em>-matting model, trained to
+        find people. Objects, pets and illustrations come out badly — that is
+        the model, not your browser.
+      </p>
+    </div>
+    <p class="muted" id="file-note"></p>
+  </div>
+
+  <div class="card">
+    <h2>2 · Run</h2>
+    <p class="muted">
+      The first run downloads the runtime and the model from this site — nothing
+      from a third party. Later runs reuse your browser's cache.
+    </p>
+    <p class="run-row">
+      <label>Backend
+        <select id="backend">
+          <option value="wasm" selected>WASM (CPU)</option>
+          <option value="webgpu">WebGPU (experimental)</option>
+        </select>
+      </label>
+      <button class="btn" id="run" disabled>Remove background</button>
+      <span class="muted" id="download-note"></span>
+    </p>
+    <p class="muted" id="backend-note"></p>
+    <div class="progress"><div id="progress-bar"></div></div>
+    <pre id="status">idle</pre>
+  </div>
+
+  <div class="card" id="result-card" hidden>
+    <h2>3 · Result</h2>
+    <div class="pair">
+      <figure>
+        <figcaption>Original</figcaption>
+        <canvas id="before"></canvas>
+      </figure>
+      <figure>
+        <figcaption>Cut-out <span class="muted">(checkerboard = transparent)</span></figcaption>
+        <canvas id="after" class="checker"></canvas>
+      </figure>
+    </div>
+    <table class="data" id="stats"></table>
+    <p class="share-row">
+      <button class="btn" id="download">Download PNG</button>
+      <button class="btn ghost" id="copy">Copy summary</button>
+    </p>
+    <p class="muted" id="copy-note"></p>
+  </div>
+
+  <div class="card">
+    <h2>Methodology &amp; caveats</h2>
+    <ul class="muted">
+      <li><strong>Model:</strong> MODNet (Apache-2.0), 8-bit quantized ONNX, 6.63 MB, served from this site. It is a portrait-matting model: the photo is resized so that its short edge is 512 px for the network, and the predicted mask is scaled back up to the photo's full resolution.</li>
+      <li><strong>Runtime:</strong> ONNX Runtime Web (<code>onnxruntime-web</code> <span id="ort-version">…</span>) through <code>@huggingface/transformers</code> 4.3.2, also served from this site. The WebGPU-capable build is larger than Cloudflare's 25 MiB per-file limit, so it ships gzipped and the worker inflates it before use.</li>
+      <li><strong>Backend:</strong> WASM is the default — it is the path that is known to work. WebGPU is opt-in and never falls back: if the WebGPU session cannot be created, you see the error. The two load different runtime builds, so the first run after switching backend downloads again. On the machine this page was built on, WebGPU was slower than WASM for this quantized model, and the float-weight variants of the same model (not shipped here) ran faster on WebGPU but came out visibly wrong. Treat WebGPU numbers as data, and compare the cut-outs before trusting one.</li>
+      <li><strong>One thread.</strong> This page sends no cross-origin-isolation headers, so the WASM path cannot use threads; the WebGPU path does not need them.</li>
+      <li><strong>Timings</strong> are single runs, measured in the worker. "First run" on a backend includes shader compilation and JIT warm-up — run the same photo again for a warm number. Inference time covers preprocessing, the network and scaling the mask back up; decoding the photo and encoding the PNG are listed separately or excluded.</li>
+      <li><strong>Not measured here:</strong> accuracy against server-side models, phones, memory use, and anything that is not a person.</li>
+    </ul>
+    <p class="muted">Found something odd? <a href="https://github.com/pixkeep/lab/discussions">Bring it to Discussions</a> — reproducible oddities become blog posts.</p>
+  </div>
+
+  <style is:global>
+    /* is:global — these rules target JS-created nodes, which never receive
+       Astro's scoped-style attributes (scoped selectors silently miss them). */
+    .devwarn { border-left: 4px solid #d4a017; background: #fff8e6; }
+    .env-grid { display: grid; grid-template-columns: 160px 1fr; gap: 4px 16px; margin: 0; font-size: 0.92rem; }
+    .env-grid dt { color: var(--ink-soft); }
+    .env-grid dd { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.86rem; overflow-wrap: anywhere; }
+    .drop { border: 2px dashed var(--line); border-radius: 10px; padding: 18px; text-align: center; transition: border-color 0.15s, background 0.15s; }
+    .drop.over { border-color: var(--accent); background: #eef4fd; }
+    .run-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; }
+    .run-row label { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: 0.92rem; }
+    .run-row select { font: inherit; font-size: 0.92rem; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+    .progress { height: 8px; background: #e5eaf1; border-radius: 999px; overflow: hidden; margin: 12px 0 8px; }
+    #progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-deep), var(--accent)); transition: width 0.3s; }
+    #status { white-space: pre-wrap; font-size: 0.85rem; background: var(--navy-0); color: #dbe7f5; border-radius: 8px; padding: 10px 14px; margin: 0; }
+    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 760px) { .pair { grid-template-columns: 1fr; } }
+    .pair figure { margin: 0; }
+    .pair figcaption { font-size: 0.86rem; color: var(--ink-soft); margin-bottom: 6px; }
+    .pair canvas { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; }
+    .checker {
+      background-color: #fff;
+      background-image:
+        linear-gradient(45deg, #e5eaf1 25%, transparent 25%),
+        linear-gradient(-45deg, #e5eaf1 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #e5eaf1 75%),
+        linear-gradient(-45deg, transparent 75%, #e5eaf1 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+    }
+    #stats { margin-top: 16px; }
+    #stats th, #stats td { text-align: left; }
+    #stats td:first-child { width: 160px; color: var(--ink-soft); }
+    .share-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+  </style>
+
+  <script>
+    import { removeBackground } from '../lib/background-removal';
+    type BackendChoice = 'auto' | 'webgpu' | 'wasm';
+    type RunOptions = import('../lib/background-removal').RunOptions;
+    type RunProgress = import('../lib/background-removal').RunProgress;
+    type RunResult = import('../lib/background-removal').RunResult;
+    import { collectDeviceInfo, enrichDeviceInfo } from '../lib/device-info';
+    import ortManifest from '../lib/ort-manifest.json';
+
+    // ─── Config ────────────────────────────────────────────────────────────
+    const MODEL_BYTES = 6632188; // mirrors third_party/modnet/NOTICE
+    const PREVIEW_MAX = 560; // px on the long side of each preview
+    // Progress bar span per stage [from, to].
+    const STAGE_SPAN: Record<RunProgress['stage'], [number, number]> = {
+      'worker-restart': [0, 0],
+      'runtime-download': [0, 0.35],
+      'model-download': [0.35, 0.7],
+      session: [0.7, 0.8],
+      decode: [0.8, 0.9],
+      inference: [0.9, 1],
+    };
+
+    // ─── DOM ───────────────────────────────────────────────────────────────
+    const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
+    const statusEl = $('#status') as HTMLPreElement;
+    const barEl = $('#progress-bar');
+    const runBtn = $('#run') as HTMLButtonElement;
+    const fileInput = $('#file') as HTMLInputElement;
+    const dropEl = $('#drop');
+    const fileNote = $('#file-note');
+    const backendSel = $('#backend') as HTMLSelectElement;
+    const resultCard = $('#result-card');
+    const beforeCanvas = $('#before') as HTMLCanvasElement;
+    const afterCanvas = $('#after') as HTMLCanvasElement;
+    const statsEl = $('#stats');
+    const status = (t: string) => { statusEl.textContent = t; };
+    const progress = (frac: number) => { barEl.style.width = `${Math.round(frac * 100)}%`; };
+    const mb = (bytes: number) => `${(bytes / 1048576).toFixed(2)} MB`;
+    const ms = (v: number) => `${Math.round(v)} ms`;
+
+    // URL parameters (?backend=…&autorun=1) exist for automation — see the
+    // "Automation hooks" block at the bottom.
+    const params = new URLSearchParams(location.search);
+    (window as any).__bgRemovalResult = null;
+
+    // ─── Environment card ──────────────────────────────────────────────────
+    const deviceInfo = collectDeviceInfo();
+    let webgpuText = 'checking…';
+    function renderEnv() {
+      const rows: Array<[string, string]> = [
+        ['Browser', `${deviceInfo.browser} ${deviceInfo.browserVersion} (${deviceInfo.engine})`],
+        ['OS', deviceInfo.os + (deviceInfo.arch ? ` (${deviceInfo.arch})` : '')],
+        ['CPU cores', deviceInfo.cores ? String(deviceInfo.cores) : 'not exposed'],
+        ['Memory', deviceInfo.memoryGB != null ? `≈${deviceInfo.memoryGB} GB (browser-reported, may be rounded)` : 'not exposed by this browser'],
+        ['GPU', deviceInfo.gpu ?? 'masked / not exposed'],
+        ['WebGPU', webgpuText],
+        ['Screen', deviceInfo.screen],
+      ];
+      $('#env-list').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+    }
+    renderEnv();
+    enrichDeviceInfo(deviceInfo).then(renderEnv);
+
+    let webgpuAvailable = false;
+    (async () => {
+      const nav = navigator as Navigator & { gpu?: GPU };
+      if (!nav.gpu) {
+        webgpuText = 'not available in this browser';
+      } else {
+        try {
+          const adapter = await nav.gpu.requestAdapter();
+          if (!adapter) {
+            webgpuText = 'API present, but no adapter';
+          } else {
+            webgpuAvailable = true;
+            const i = adapter.info || ({} as GPUAdapterInfo);
+            webgpuText = `available${i.vendor || i.architecture ? ` (${[i.vendor, i.architecture].filter(Boolean).join(' / ')})` : ''}`;
+          }
+        } catch {
+          webgpuText = 'API present, but no adapter';
+        }
+      }
+      $('#ort-version').textContent = ortManifest.ortVersion;
+      renderEnv();
+      renderBackendNote();
+    })();
+
+    // ─── Backend choice ────────────────────────────────────────────────────
+    // The runtime build follows the backend (see src/lib/background-removal.ts),
+    // so the download note does too.
+    function renderBackendNote() {
+      const onWebGpu = backendSel.value === 'webgpu' || (backendSel.value === 'auto' && webgpuAvailable);
+      const flavor = onWebGpu ? 'webgpu' : 'cpu';
+      const runtime = ortManifest.flavors[flavor];
+      $('#download-note').textContent = `first run downloads ≈ ${mb(runtime.shippedBytes + MODEL_BYTES)} (runtime ${mb(runtime.shippedBytes)} gzipped + model ${mb(MODEL_BYTES)})`;
+      $('#backend-note').textContent =
+        flavor === 'cpu'
+          ? 'WASM runs on every browser this page supports, single-threaded.'
+          : webgpuAvailable
+            ? 'Experimental. On the machine this page was built on, WebGPU was the slower path for this model — compare the cut-outs before trusting a WebGPU result.'
+            : 'WebGPU is not available in this browser: the run will stop with that message.';
+    }
+    backendSel.addEventListener('change', renderBackendNote);
+
+    // ─── File selection ────────────────────────────────────────────────────
+    let currentFile: File | null = null;
+    let running = false;
+    let lastResult: RunResult | null = null;
+    function refreshRunBtn() {
+      runBtn.disabled = running || !currentFile;
+      runBtn.textContent = lastResult ? 'Run again' : 'Remove background';
+    }
+    async function selectFile(file: File | undefined | null) {
+      lastResult = null;
+      resultCard.hidden = true;
+      if (!file) { currentFile = null; fileNote.textContent = ''; refreshRunBtn(); return; }
+      try {
+        // Decode once up front so an unreadable file fails here, with a plain message.
+        const bmp = await createImageBitmap(file);
+        let w = 0;
+        let h = 0;
+        try {
+          w = bmp.width;
+          h = bmp.height;
+          drawPreview(beforeCanvas, bmp, w, h);
+        } finally {
+          bmp.close(); // a closed bitmap reports 0×0 — read the size first
+        }
+        fileNote.textContent = `${file.name} — ${w}×${h}, ${mb(file.size)}`;
+        currentFile = file;
+        status('ready');
+      } catch {
+        currentFile = null;
+        fileNote.textContent = '';
+        status('failed: this file could not be decoded as an image.');
+      }
+      refreshRunBtn();
+    }
+    fileInput.addEventListener('change', () => {
+      const f = fileInput.files?.[0];
+      void selectFile(f).then(() => {
+        if (params.get('autorun') === '1') void run();
+      });
+    });
+    // Drop zone: the input sits inside it, so a drop anywhere in it selects the file.
+    for (const type of ['dragenter', 'dragover']) {
+      dropEl.addEventListener(type, (e) => { e.preventDefault(); dropEl.classList.add('over'); });
+    }
+    for (const type of ['dragleave', 'drop']) {
+      dropEl.addEventListener(type, (e) => { e.preventDefault(); dropEl.classList.remove('over'); });
+    }
+    dropEl.addEventListener('drop', (e) => {
+      const f = (e as DragEvent).dataTransfer?.files?.[0];
+      void selectFile(f);
+    });
+
+    // ─── Run ───────────────────────────────────────────────────────────────
+    function onProgress(p: RunProgress) {
+      const [from, to] = STAGE_SPAN[p.stage];
+      if (p.stage === 'runtime-download' || p.stage === 'model-download') {
+        // Clamped: a host that unwraps the gzipped runtime itself reports a
+        // content-length for the compressed file while more (decoded) bytes arrive.
+        const frac = p.total ? Math.min(1, (p.loaded ?? 0) / p.total) : 0;
+        progress(from + (to - from) * frac);
+        const what = p.stage === 'runtime-download' ? 'runtime' : 'model';
+        const amount = p.total ? `${mb(p.loaded ?? 0)} / ${mb(p.total)}` : mb(p.loaded ?? 0);
+        status(`loading ${what}… ${Math.round(frac * 100)}% (${amount})`);
+      } else {
+        progress(from);
+        if (p.stage === 'worker-restart') status('switching runtime build: the worker is replaced, the model comes from the cache…');
+        else if (p.stage === 'session') status(p.fallbackReason ? `WebGPU session failed, falling back to WASM: ${p.fallbackReason}` : `creating ${p.backend} session…`);
+        else if (p.stage === 'decode') status('decoding photo…');
+        else if (p.stage === 'inference') status(`running inference on ${p.backend}…`);
+      }
+    }
+
+    function drawPreview(canvas: HTMLCanvasElement, source: CanvasImageSource, w: number, h: number) {
+      const scale = Math.min(1, PREVIEW_MAX / Math.max(w, h));
+      canvas.width = Math.max(1, Math.round(w * scale));
+      canvas.height = Math.max(1, Math.round(h * scale));
+      const ctx = canvas.getContext('2d')!;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
+    }
+
+    function backendLabel(s: RunResult['stats']): string {
+      if (s.backend === 'webgpu') return `WebGPU${s.gpu ? ` (${[s.gpu.vendor, s.gpu.architecture].filter(Boolean).join(' / ')})` : ''}`;
+      return 'WASM (CPU)';
+    }
+
+    function renderResult(result: RunResult) {
+      const s = result.stats;
+      const bitmap = new ImageData(new Uint8ClampedArray(result.rgba), result.width, result.height);
+      createImageBitmap(bitmap).then((bmp) => {
+        try { drawPreview(afterCanvas, bmp, result.width, result.height); } finally { bmp.close(); }
+      });
+      const rows: Array<[string, string]> = [
+        ['Backend', backendLabel(s) + (s.fallbackReason ? ` — auto fell back from WebGPU` : '')],
+        ['Model', `MODNet, ${s.model.dtype} (${mb(s.model.bytes)})`],
+        ['Runtime', `${s.runtime.file.split('/').pop()} — ${mb(s.runtime.rawBytes)} unpacked, ${mb(s.runtime.shippedBytes)} downloaded, inflated in ${ms(s.runtime.gunzipMs)}`],
+        ['Model load', `${ms(s.model.loadMs)}${s.firstRun ? ' (includes session start)' : ' (session already warm)'}`],
+        ['Photo', `${s.input.width}×${s.input.height}, decoded in ${ms(s.decodeMs)}`],
+        ['Inference', `${ms(s.runMs)}${s.firstRun ? ' (first run: includes warm-up)' : ' (warm)'}`],
+        ['Alpha', `${s.removedPct.toFixed(1)}% removed · ${s.keptPct.toFixed(1)}% kept · ${s.softPct.toFixed(1)}% soft edge`],
+      ];
+      statsEl.innerHTML = `<tbody>${rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</tbody>`;
+      resultCard.hidden = false;
+    }
+
+    function summary() {
+      return {
+        experiment: 'background-removal',
+        experimentVersion: 1,
+        generatedAt: new Date().toISOString(),
+        device: { ...deviceInfo, webgpu: webgpuText },
+        run: lastResult?.stats ?? null,
+      };
+    }
+
+    async function run() {
+      if (running || !currentFile) return;
+      running = true;
+      resultCard.hidden = true;
+      refreshRunBtn();
+      progress(0);
+      status('starting…');
+      try {
+        // ?runtime=… forces a runtime build (tests and experiments); the page
+        // offers no control for it.
+        const options: RunOptions = { runtime: (params.get('runtime') || undefined) as RunOptions['runtime'] };
+        lastResult = await removeBackground(currentFile, backendSel.value as BackendChoice, onProgress, options);
+        renderResult(lastResult);
+        (window as any).__bgRemovalResult = summary();
+        progress(1);
+        const s = lastResult.stats;
+        status(`done: ${backendLabel(s)}, inference ${ms(s.runMs)}${s.firstRun ? ' (first run)' : ''}, ${s.removedPct.toFixed(1)}% of the photo removed`);
+      } catch (e) {
+        const message = (e as Error)?.message || String(e);
+        lastResult = null;
+        (window as any).__bgRemovalResult = { experiment: 'background-removal', error: message };
+        progress(0);
+        status(`failed: ${message}`);
+      } finally {
+        running = false;
+        refreshRunBtn();
+      }
+    }
+    runBtn.addEventListener('click', run);
+
+    // ─── Export ────────────────────────────────────────────────────────────
+    $('#download').addEventListener('click', () => {
+      if (!lastResult) return;
+      const { width, height, rgba } = lastResult;
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        status('failed: this browser refuses a canvas that large — the cut-out cannot be exported as PNG here.');
+        return;
+      }
+      ctx.putImageData(new ImageData(new Uint8ClampedArray(rgba), width, height), 0, 0);
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          status('failed: PNG encoding returned nothing (the image is probably too large for this browser).');
+          return;
+        }
+        const base = (currentFile?.name || 'photo').replace(/\.[^.]+$/, '');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${base}-no-bg.png`;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+      }, 'image/png');
+    });
+    $('#copy').addEventListener('click', async () => {
+      const text = JSON.stringify(summary(), null, 2);
+      try {
+        await navigator.clipboard.writeText(text);
+        $('#copy-note').textContent = 'Copied — numbers and environment only, no image data.';
+      } catch {
+        $('#copy-note').textContent = 'Clipboard blocked by the browser — nothing was copied.';
+      }
+    });
+
+    // ─── Automation hooks (Playwright) ─────────────────────────────────────
+    // ?backend=wasm|webgpu|auto&autorun=1 — pick a backend and run as soon as a
+    // file is chosen; the outcome lands in window.__bgRemovalResult (the
+    // summary on success, { error } on failure). "auto" (WebGPU when the device
+    // has it, WASM otherwise, with fallback) exists only as this parameter.
+    const backendParam = params.get('backend');
+    if (backendParam === 'auto') {
+      const option = document.createElement('option');
+      option.value = 'auto';
+      option.textContent = 'Auto (WebGPU if available)';
+      backendSel.add(option);
+      backendSel.value = 'auto';
+    } else if (backendParam === 'webgpu' || backendParam === 'wasm') {
+      backendSel.value = backendParam;
+    }
+    renderBackendNote();
+  </script>
+</Base>

@@ -1,7 +1,7 @@
 {
   "name": "@pixkeep/lab",
   "version": "0.1.0",
-  "description": "PixKeep Lab — public, reproducible in-browser image-codec experiments. First experiment: canvas toBlob encode matrix across browsers.",
+  "description": "PixKeep Lab — public, reproducible in-browser image experiments: codecs and neural networks. First experiment: canvas toBlob encode matrix across browsers.",
   "type": "module",
   "license": "MIT",
   "scripts": {
@@ -11,6 +11,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@huggingface/transformers": "4.3.2",
     "@jsquash/avif": "^2.1.1",
     "@jsquash/webp": "^1.5.0",
     "@wasm-codecs/mozjpeg": "^1.0.1",
